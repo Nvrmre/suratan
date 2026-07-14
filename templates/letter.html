@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: 210mm 297mm;
+            margin: 2.5cm 2.5cm 2.5cm 3cm;
+        }
+        body {
+            font-family: 'Times New Roman', 'Liberation Serif', Times, serif;
+            font-size: 12pt;
+            line-height: 1.5;
+            color: #000;
+            width: 100%;
+            height: 100%;
+        }
+
+        .kop-surat {
+            margin-bottom: 4px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #1a365d;
+        }
+        .kop-surat .header-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .kop-surat .logo-wrap {
+            flex-shrink: 0;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+        .kop-surat .logo-wrap img {
+            display: block;
+            max-height: 75px;
+            max-width: 80px;
+            background: none !important;
+            background-color: transparent !important;
+            border: none;
+            mix-blend-mode: multiply;
+        }
+        .kop-surat .info-wrap {
+            flex: 1;
+        }
+        .kop-surat .title {
+            font-size: 20pt;
+            font-weight: bold;
+            color: #1a365d;
+            letter-spacing: 2px;
+        }
+        .kop-surat .address {
+            font-size: 10pt;
+            color: #4a5568;
+            margin-top: 2px;
+        }
+        .kop-surat .contacts {
+            font-size: 10pt;
+            color: #4a5568;
+            margin-top: 1px;
+        }
+        .kop-surat .divider {
+            border-top: 1px solid #1a365d;
+            margin-top: 8px;
+        }
+
+        .letter-info {
+            margin-top: 28px;
+        }
+        .letter-info table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .letter-info td {
+            padding: 2px 0;
+            vertical-align: top;
+        }
+        .letter-info td.label {
+            width: 100px;
+        }
+
+        .recipient-block {
+            margin-top: 20px;
+        }
+        .recipient-block .to-label {
+            font-style: italic;
+        }
+
+        .body-content {
+            margin-top: 24px;
+            text-align: justify;
+        }
+        .body-content p {
+            margin-bottom: 8px;
+            text-indent: 0;
+        }
+        .body-content .salutation {
+            margin-bottom: 12px;
+        }
+        .body-content .closing {
+            margin-top: 16px;
+        }
+        .body-content .letter-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 11pt;
+        }
+        .body-content .letter-table th,
+        .body-content .letter-table td {
+            border: 1px solid #000;
+            padding: 6px 10px;
+            text-align: left;
+        }
+        .body-content .letter-table th {
+            background: #f0f0f0;
+            font-weight: bold;
+        }
+
+        .signature {
+            margin-top: 36px;
+            text-align: right;
+        }
+        .signature .city-date {
+            margin-bottom: 6px;
+        }
+        .signature .sig-image {
+            margin-top: 8px;
+            margin-bottom: 4px;
+        }
+        .signature .sig-image img {
+            max-height: 60px;
+            max-width: 180px;
+        }
+        .signature .sender-name {
+            font-weight: bold;
+            text-decoration: underline;
+        }
+        .signature .sender-title {
+            font-size: 11pt;
+        }
+
+        .footer-note {
+            margin-top: 30px;
+            font-size: 9pt;
+            color: #718096;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 8px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="kop-surat">
+        <div class="header-row">
+            {% if logo_b64 %}
+            <div class="logo-wrap">
+                <img src="{{ logo_b64 }}" alt="Logo">
+            </div>
+            {% endif %}
+            <div class="info-wrap">
+                <div class="title">{{ company_name }}</div>
+                <div class="address">{{ company_address }}</div>
+                {% if company_phone or company_email or company_website %}
+                <div class="contacts">
+                    {% if company_phone %}{{ company_phone }}{% endif %}
+                    {% if company_phone and company_email %} &bull; {% endif %}
+                    {% if company_email %}{{ company_email }}{% endif %}
+                    {% if (company_phone or company_email) and company_website %} &bull; {% endif %}
+                    {% if company_website %}{{ company_website }}{% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="divider"></div>
+    </div>
+
+    <div class="letter-info">
+        <table>
+            <tr>
+                <td class="label">Nomor</td>
+                <td>: {{ letter_type_label[:3].upper() }}/{{ company_name[:3].upper() }}/{{ date_str.replace('-', '')[:6] }}/{{ date_str[:4] }}</td>
+            </tr>
+            <tr>
+                <td class="label">Lampiran</td>
+                <td>: {{ '- (satu) berkas' if letter_type == 'lamaran' else '-' }}</td>
+            </tr>
+            <tr>
+                <td class="label">Perihal</td>
+                <td>: <strong>{{ subject }}</strong></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="recipient-block">
+        {% if letter_type == 'lamaran' %}
+        <p class="to-label">Kepada Yth.</p>
+        <p><strong>{{ recipient }}</strong></p>
+        <p>{{ recipient_address }}</p>
+        {% else %}
+        <p class="to-label">Kepada Yth.</p>
+        <p><strong>{{ recipient }}</strong></p>
+        <p>{{ recipient_address }}</p>
+        {% endif %}
+    </div>
+
+    <div class="body-content">
+        {% if letter_type == 'lamaran' %}
+        <p class="salutation">Dengan hormat,</p>
+        <p>Saya yang bertanda tangan di bawah ini:</p>
+        <p>Nama &emsp;&emsp;&ensp;: {{ sender }}</p>
+        <p>Jabatan &emsp;&emsp;: {{ sender_title }}</p>
+        <p>&nbsp;</p>
+        <p>Dengan ini mengajukan permohonan untuk mengisi posisi <strong>{{ position if position else subject }}</strong> di {{ recipient }}. Saya memiliki pengalaman dan kualifikasi yang sesuai dengan kebutuhan perusahaan.</p>
+        {% for paragraph in body.split('\n') %}
+            {% if paragraph.strip() %}
+                <p>{{ paragraph.strip() }}</p>
+            {% endif %}
+        {% endfor %}
+        <p>Sebagai bahan pertimbangan, bersama surat ini saya lampirkan:</p>
+        <p>1. Daftar Riwayat Hidup (CV)</p>
+        <p>2. Fotokopi Ijazah terakhir</p>
+        <p>3. Pas foto terbaru</p>
+        <p>4. Surat keterangan pengalaman kerja</p>
+        <p class="closing">Demikian permohonan ini saya buat dengan sebenarnya. Besar harapan saya untuk dapat diberikan kesempatan bergabung di {{ recipient }}. Atas perhatian Bapak/Ibu, saya ucapkan terima kasih.</p>
+
+        {% elif letter_type == 'penawaran' %}
+        <p class="salutation">Dengan hormat,</p>
+        <p>Melalui surat ini, kami dari <strong>{{ company_name }}</strong> ingin menyampaikan penawaran produk/jasa kepada <strong>{{ recipient }}</strong>.</p>
+        {% for paragraph in body.split('\n') %}
+            {% if paragraph.strip() %}
+                <p>{{ paragraph.strip() }}</p>
+            {% endif %}
+        {% endfor %}
+        {% set tbl = table_data | fromjson %}
+        {% if tbl and tbl|length > 0 and tbl[0]|length > 1 %}
+        <p>Berikut rincian penawaran kami:</p>
+        <table class="letter-table">
+            <thead>
+                <tr>
+                {% for cell in tbl[0] %}
+                    <th>{{ cell }}</th>
+                {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in tbl[1:] %}
+                <tr>
+                    {% for cell in row %}
+                    <td>{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        <p class="closing">Demikian penawaran ini kami sampaikan. Kami berharap dapat menjalin kerjasama yang baik dengan {{ recipient }}. Atas perhatian dan kepercayaan Bapak/Ibu, kami ucapkan terima kasih.</p>
+
+        {% elif letter_type == 'undangan' %}
+        <p class="salutation">Dengan hormat,</p>
+        <p>Sehubungan dengan kegiatan yang akan kami selenggarakan, dengan ini kami mengundang Bapak/Ibu/Sdr/i untuk hadir pada:</p>
+        <p>&nbsp;</p>
+        <p><strong>Acara</strong> &emsp;: {{ event_name if event_name else subject }}</p>
+        <p><strong>Hari/Tgl</strong> &emsp;: {{ event_date if event_date else date }}</p>
+        <p><strong>Waktu</strong> &emsp;: {{ event_time if event_time else '-' }}</p>
+        <p><strong>Tempat</strong> &emsp;: {{ event_place if event_place else '-' }}</p>
+        <p>&nbsp;</p>
+        {% for paragraph in body.split('\n') %}
+            {% if paragraph.strip() %}
+                <p>{{ paragraph.strip() }}</p>
+            {% endif %}
+        {% endfor %}
+        <p class="closing">Demikian undangan ini kami sampaikan. Kehadiran dan partisipasi Bapak/Ibu/Sdr/i sangat kami harapkan. Atas perhatiannya, kami ucapkan terima kasih.</p>
+
+        {% elif letter_type == 'pemberitahuan' %}
+        <p class="salutation">Dengan hormat,</p>
+        <p>Melalui surat ini, kami dari <strong>{{ company_name }}</strong> bermaksud menyampaikan pemberitahuan kepada <strong>{{ recipient }}</strong> sebagaimana berikut:</p>
+        {% for paragraph in body.split('\n') %}
+            {% if paragraph.strip() %}
+                <p>{{ paragraph.strip() }}</p>
+            {% endif %}
+        {% endfor %}
+        {% if show_table %}
+        {% set tbl = table_data | fromjson %}
+        <table class="letter-table">
+            <thead>
+                <tr>
+                {% for cell in tbl[0] %}
+                    <th>{{ cell }}</th>
+                {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in tbl[1:] %}
+                <tr>
+                    {% for cell in row %}
+                    <td>{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        <p class="closing">Demikian pemberitahuan ini kami sampaikan untuk menjadi perhatian dan dimaklumi. Atas perhatiannya, kami ucapkan terima kasih.</p>
+
+        {% else %}
+        <p class="salutation">Dengan hormat,</p>
+        {% for paragraph in body.split('\n') %}
+            {% if paragraph.strip() %}
+                <p>{{ paragraph.strip() }}</p>
+            {% endif %}
+        {% endfor %}
+        {% if show_table %}
+        {% set tbl = table_data | fromjson %}
+        <table class="letter-table">
+            <thead>
+                <tr>
+                {% for cell in tbl[0] %}
+                    <th>{{ cell }}</th>
+                {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in tbl[1:] %}
+                <tr>
+                    {% for cell in row %}
+                    <td>{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        <p class="closing">Demikian surat ini kami sampaikan. Atas perhatian dan kerjasama yang baik, kami ucapkan terima kasih.</p>
+        {% endif %}
+    </div>
+
+    <div class="signature">
+        <p class="city-date">{{ company_address.split(',')[0] if ',' in company_address else company_address }}, {{ date }}</p>
+        {% if letter_type == 'lamaran' %}
+        <p>Hormat saya,</p>
+        {% elif letter_type == 'undangan' %}
+        <p>Hormat kami,</p>
+        {% else %}
+        <p>Hormat kami,</p>
+        {% endif %}
+        {% if signature_b64 %}
+        <div class="sig-image">
+            <img src="{{ signature_b64 }}" alt="Tanda Tangan">
+        </div>
+        {% else %}
+        <br>
+        {% endif %}
+        <br>
+        <div class="sender-name">{{ sender }}</div>
+        <div class="sender-title">{{ sender_title }}</div>
+    </div>
+
+    <div class="footer-note">
+        Dokumen ini dibuat secara elektronik.
+    </div>
+
+</body>
+</html>

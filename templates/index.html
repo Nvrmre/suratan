@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pembuat Surat</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #e8f0fe 0%, #f0f4f8 100%);
+            min-height: 100vh;
+            padding: 24px 12px;
+        }
+        .container {
+            max-width: 860px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            font-size: clamp(22px, 5vw, 30px);
+            color: #1a365d;
+            margin-bottom: 4px;
+        }
+        .header p {
+            color: #4a5568;
+            font-size: clamp(13px, 3vw, 15px);
+        }
+        .card {
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+            padding: clamp(16px, 4vw, 40px);
+        }
+        .section-title {
+            font-size: clamp(14px, 3.5vw, 16px);
+            font-weight: 700;
+            color: #2b6cb0;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .section-title:not(:first-child) {
+            margin-top: 24px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px 16px;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        .form-group.full { grid-column: 1 / -1; }
+        .form-group.half { grid-column: span 1; }
+        label {
+            display: block;
+            font-size: clamp(12px, 2.8vw, 13px);
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 4px;
+        }
+        label .required {
+            color: #e53e3e;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: clamp(14px, 3vw, 15px);
+            font-family: inherit;
+            transition: border-color 0.2s;
+            background: #f7fafc;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #4299e1;
+            background: white;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 140px;
+            line-height: 1.5;
+        }
+        select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234a5568' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+        input[type="date"] {
+            min-height: 48px;
+        }
+        input[type="file"] {
+            padding: 10px;
+            background: white;
+            cursor: pointer;
+            min-height: 48px;
+        }
+        input[type="file"]::file-selector-button {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 6px;
+            background: #4299e1;
+            color: white;
+            font-weight: 600;
+            font-size: clamp(12px, 2.8vw, 13px);
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .file-hint {
+            font-size: clamp(11px, 2.5vw, 12px);
+            color: #a0aec0;
+            margin-top: 3px;
+        }
+        .upload-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .preview {
+            margin-top: 8px;
+            max-width: 100%;
+            max-height: 90px;
+            display: none;
+            border-radius: 6px;
+        }
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #4299e1, #3182ce);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: clamp(15px, 3.5vw, 17px);
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            margin-top: 4px;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        .btn:active {
+            transform: scale(0.98);
+        }
+        .btn-secondary {
+            background: #edf2f7;
+            color: #2d3748;
+            border: 2px solid #e2e8f0;
+        }
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 4px;
+        }
+        .btn-group .btn {
+            flex: 1;
+        }
+        @media (max-width: 480px) {
+            .btn-group { flex-direction: column; }
+        }
+        .footer {
+            text-align: center;
+            margin-top: 16px;
+            color: #a0aec0;
+            font-size: clamp(11px, 2.5vw, 13px);
+        }
+
+        .table-builder {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #f7fafc;
+        }
+        .table-builder table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        .table-builder th, .table-builder td {
+            border: 1px solid #e2e8f0;
+            padding: 4px;
+        }
+        .table-builder th {
+            background: #edf2f7;
+        }
+        .tbl-rm-col {
+            width: 36px;
+            min-width: 36px;
+            max-width: 36px;
+            padding: 0 !important;
+            text-align: center;
+        }
+        .tbl-rm-col .tbl-del {
+            display: block;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            padding: 8px 0;
+        }
+        .tbl-input {
+            width: 100%;
+            border: none !important;
+            padding: 8px 6px !important;
+            font-size: 13px !important;
+            background: transparent !important;
+            border-radius: 0 !important;
+            min-height: 36px !important;
+        }
+        .tbl-input:focus {
+            background: white !important;
+            box-shadow: inset 0 0 0 2px #4299e1;
+        }
+        .tbl-del {
+            background: none;
+            border: none;
+            color: #e53e3e;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px 6px;
+            line-height: 1;
+            border-radius: 4px;
+            touch-action: manipulation;
+        }
+        .tbl-del:hover { background: #fff5f5; }
+        .table-actions {
+            display: flex;
+            gap: 8px;
+            padding: 10px 12px;
+            flex-wrap: wrap;
+        }
+        .tbl-btn {
+            padding: 8px 16px;
+            border: 2px solid #4299e1;
+            background: white;
+            color: #4299e1;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            touch-action: manipulation;
+            transition: background 0.15s;
+        }
+        .tbl-btn:hover { background: #ebf8ff; }
+        .tbl-btn-secondary {
+            border-color: #a0aec0;
+            color: #4a5568;
+        }
+        .tbl-btn-secondary:hover { background: #f7fafc; }
+
+        @media (max-width: 640px) {
+            body { padding: 12px 8px; }
+            .form-row { grid-template-columns: 1fr; gap: 8px; }
+            .form-group.half { grid-column: 1 / -1; }
+            .upload-grid { grid-template-columns: 1fr; }
+            .form-group { margin-bottom: 8px; }
+            input, select, textarea { padding: 14px; }
+            .btn { padding: 18px; }
+        }
+        @media (max-width: 400px) {
+            .card { padding: 12px; border-radius: 10px; }
+            .section-title { font-size: 13px; }
+            input[type="file"]::file-selector-button {
+                display: block;
+                margin-bottom: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Pembuat Surat</h1>
+            <p>Buat surat resmi dengan kop surat sendiri</p>
+        </div>
+
+        <div class="card">
+            <form action="/generate" method="post" enctype="multipart/form-data">
+
+                <div class="section-title">Kop Surat</div>
+                <div class="form-row">
+                    <div class="form-group full">
+                        <label>Nama Perusahaan / Instansi <span class="required">*</span></label>
+                        <input type="text" name="company_name" placeholder="CV. Contoh Jaya" required>
+                    </div>
+                    <div class="form-group full">
+                        <label>Alamat <span class="required">*</span></label>
+                        <input type="text" name="company_address" placeholder="Jl. Merdeka No. 123, Kota, Provinsi, Kode Pos" required>
+                    </div>
+                    <div class="form-group half">
+                        <label>Telepon</label>
+                        <input type="text" name="company_phone" placeholder="(021) 1234-5678">
+                    </div>
+                    <div class="form-group half">
+                        <label>Email</label>
+                        <input type="email" name="company_email" placeholder="info@perusahaan.com">
+                    </div>
+                    <div class="form-group half">
+                        <label>Website</label>
+                        <input type="text" name="company_website" placeholder="www.perusahaan.com">
+                    </div>
+                    <div class="form-group half">
+                        <label>Logo Perusahaan</label>
+                        <input type="file" name="logo" accept="image/png,image/jpeg,image/gif,image/webp" onchange="previewImg(this, 'logo-preview')">
+                        <div class="file-hint">PNG transparan paling baik</div>
+                        <img class="preview" id="logo-preview">
+                    </div>
+                </div>
+
+                <div class="section-title">Informasi Surat</div>
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label>Jenis Surat <span class="required">*</span></label>
+                        <select name="letter_type" id="letter_type" onchange="toggleTypeFields()" required>
+                            {% for key, label in letter_types.items() %}
+                            <option value="{{ key }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group half">
+                        <label>Tanggal <span class="required">*</span></label>
+                        <input type="date" name="date" value="{{ today }}" required>
+                    </div>
+
+                    <div class="form-group full type-field type-lamaran" style="display:none">
+                        <label>Posisi yang Dilamar <span class="required">*</span></label>
+                        <input type="text" name="position" placeholder="Misal: Staff Administrasi, Marketing Manager, dll">
+                    </div>
+
+                    <div class="form-group half type-field type-undangan" style="display:none">
+                        <label>Nama Acara</label>
+                        <input type="text" name="event_name" placeholder="Misal: Rapat Tahunan, Seminar, dll">
+                    </div>
+                    <div class="form-group half type-field type-undangan" style="display:none">
+                        <label>Tanggal Acara</label>
+                        <input type="date" name="event_date">
+                    </div>
+                    <div class="form-group half type-field type-undangan" style="display:none">
+                        <label>Waktu</label>
+                        <input type="text" name="event_time" placeholder="Misal: 09.00 WIB - selesai">
+                    </div>
+                    <div class="form-group full type-field type-undangan" style="display:none">
+                        <label>Tempat</label>
+                        <input type="text" name="event_place" placeholder="Misal: Aula Gedung Utama Lt. 3">
+                    </div>
+                    <div class="form-group half">
+                        <label>Tujuan / Kepada <span class="required">*</span></label>
+                        <input type="text" name="recipient" placeholder="Nama perusahaan / instansi / orang" required>
+                    </div>
+                    <div class="form-group half">
+                        <label>Alamat Tujuan <span class="required">*</span></label>
+                        <input type="text" name="recipient_address" placeholder="Jl. Contoh No. 123, Kota" required>
+                    </div>
+                    <div class="form-group full">
+                        <label>Perihal / Subjek <span class="required">*</span></label>
+                        <input type="text" name="subject" placeholder="Misal: Penawaran Produk, Undangan Rapat, dll" required>
+                    </div>
+                    <div class="form-group full">
+                        <label>Isi Surat <span class="required">*</span></label>
+                        <textarea name="body" placeholder="Tulis isi surat di sini..." required></textarea>
+                    </div>
+                </div>
+
+                <div class="section-title">Tabel (Opsional)</div>
+                <div class="form-row">
+                    <div class="form-group full">
+                        <label>Tambahkan tabel ke dalam surat</label>
+                        <div class="table-builder" id="table-builder">
+                            <table id="table-editor">
+                                <thead>
+                                    <tr>
+                                        <th><input type="text" class="tbl-input" data-col="0" data-row="0" placeholder="Kolom 1"></th>
+                                        <th><input type="text" class="tbl-input" data-col="1" data-row="0" placeholder="Kolom 2"></th>
+                                        <th><input type="text" class="tbl-input" data-col="2" data-row="0" placeholder="Kolom 3"></th>
+                                        <th class="tbl-rm-col"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-body">
+                                    <tr>
+                                        <td><input type="text" class="tbl-input" data-col="0" data-row="1" placeholder="Isi"></td>
+                                        <td><input type="text" class="tbl-input" data-col="1" data-row="1" placeholder="Isi"></td>
+                                        <td><input type="text" class="tbl-input" data-col="2" data-row="1" placeholder="Isi"></td>
+                                        <td class="tbl-rm-col"><button type="button" class="tbl-del" onclick="deleteRow(this)" title="Hapus baris">×</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="table-actions">
+                                <button type="button" class="tbl-btn" onclick="addRow()">+ Tambah Baris</button>
+                                <button type="button" class="tbl-btn tbl-btn-secondary" onclick="addColumn()">+ Tambah Kolom</button>
+                                <button type="button" class="tbl-btn tbl-btn-secondary" onclick="removeLastColumn()">− Hapus Kolom</button>
+                            </div>
+                        </div>
+                        <input type="hidden" name="table_data" id="table_data">
+                    </div>
+                </div>
+
+                <div class="section-title">Pengirim & Tanda Tangan</div>
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label>Nama Pengirim <span class="required">*</span></label>
+                        <input type="text" name="sender" placeholder="Nama lengkap" required>
+                    </div>
+                    <div class="form-group half">
+                        <label>Jabatan <span class="required">*</span></label>
+                        <input type="text" name="sender_title" placeholder="Direktur / Manager / HRD" required>
+                    </div>
+                    <div class="form-group full">
+                        <label>Tanda Tangan (Upload Gambar)</label>
+                        <input type="file" name="signature" accept="image/png,image/jpeg,image/gif,image/webp" onchange="previewImg(this, 'signature-preview')">
+                        <div class="file-hint">PNG background transparan lebih baik</div>
+                        <img class="preview" id="signature-preview">
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="submit" formaction="/preview" formtarget="_blank" class="btn btn-secondary">Preview Surat</button>
+                    <button type="submit" formaction="/generate" class="btn">Download PDF</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="footer">Hasil dalam format PDF ukuran A4</div>
+    </div>
+
+    <script>
+        function previewImg(input, previewId) {
+            const preview = document.getElementById(previewId);
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function syncTableData() {
+            const table = document.getElementById('table-editor');
+            const data = [];
+            const rows = table.querySelectorAll('tr');
+            rows.forEach(row => {
+                const rowData = [];
+                const inputs = row.querySelectorAll('.tbl-input');
+                inputs.forEach(inp => rowData.push(inp.value));
+                if (rowData.length) data.push(rowData);
+            });
+            document.getElementById('table_data').value = JSON.stringify(data);
+        }
+
+        function addRow() {
+            const tbody = document.getElementById('table-body');
+            const headerRow = document.querySelector('#table-editor thead tr');
+            const numCols = headerRow.querySelectorAll('th:not(:last-child)').length;
+            const rowIdx = tbody.querySelectorAll('tr').length + 1;
+            const tr = document.createElement('tr');
+            for (let c = 0; c < numCols; c++) {
+                const td = document.createElement('td');
+                const inp = document.createElement('input');
+                inp.type = 'text';
+                inp.className = 'tbl-input';
+                inp.dataset.col = c;
+                inp.dataset.row = rowIdx;
+                inp.placeholder = 'Isi';
+                inp.oninput = syncTableData;
+                td.appendChild(inp);
+                tr.appendChild(td);
+            }
+            const tdDel = document.createElement('td');
+            tdDel.className = 'tbl-rm-col';
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'tbl-del';
+            btn.innerHTML = '×';
+            btn.title = 'Hapus baris';
+            btn.onclick = function(){ deleteRow(this); };
+            tdDel.appendChild(btn);
+            tr.appendChild(tdDel);
+            tbody.appendChild(tr);
+            syncTableData();
+        }
+
+        function deleteRow(btn) {
+            const tr = btn.closest('tr');
+            if (document.querySelectorAll('#table-body tr').length <= 1) return;
+            tr.remove();
+            syncTableData();
+        }
+
+        function addColumn() {
+            const headerRow = document.querySelector('#table-editor thead tr');
+            const colIdx = headerRow.querySelectorAll('th:not(:last-child)').length;
+            const th = document.createElement('th');
+            th.style.width = '32%';
+            const inp = document.createElement('input');
+            inp.type = 'text';
+            inp.className = 'tbl-input';
+            inp.dataset.col = colIdx;
+            inp.dataset.row = 0;
+            inp.placeholder = 'Kolom ' + (colIdx + 1);
+            inp.oninput = syncTableData;
+            th.appendChild(inp);
+            headerRow.insertBefore(th, headerRow.lastElementChild);
+
+            const rows = document.querySelectorAll('#table-body tr');
+            rows.forEach((row, ri) => {
+                const td = document.createElement('td');
+                const inp2 = document.createElement('input');
+                inp2.type = 'text';
+                inp2.className = 'tbl-input';
+                inp2.dataset.col = colIdx;
+                inp2.dataset.row = ri + 1;
+                inp2.placeholder = 'Isi';
+                inp2.oninput = syncTableData;
+                td.appendChild(inp2);
+                row.insertBefore(td, row.lastElementChild);
+            });
+            syncTableData();
+        }
+
+        function removeLastColumn() {
+            const headerRow = document.querySelector('#table-editor thead tr');
+            const cols = headerRow.querySelectorAll('th:not(:last-child)');
+            if (cols.length <= 1) return;
+            headerRow.removeChild(cols[cols.length - 1]);
+            const rows = document.querySelectorAll('#table-body tr');
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td:not(:last-child)');
+                if (cells.length) row.removeChild(cells[cells.length - 1]);
+            });
+            syncTableData();
+        }
+
+        function toggleTypeFields() {
+            const type = document.getElementById('letter_type').value;
+            document.querySelectorAll('.type-field').forEach(el => {
+                el.style.display = 'none';
+                el.querySelectorAll('input').forEach(inp => inp.required = false);
+            });
+            document.querySelectorAll('.type-' + type).forEach(el => {
+                el.style.display = 'block';
+                el.querySelectorAll('input[type="text"], input[type="date"]').forEach(inp => {
+                    if (el.querySelector('.required')) inp.required = true;
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.tbl-input').forEach(el => {
+                el.oninput = syncTableData;
+            });
+            syncTableData();
+            toggleTypeFields();
+        });
+    </script>
+</body>
+</html>
