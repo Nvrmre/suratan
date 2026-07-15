@@ -163,7 +163,10 @@
                 </div>
                 <button type="button" class="btn" onclick="addCertification()">+ Tambah Sertifikat</button>
 
-                <button type="submit" class="btn-primary">Buat CV & Download PDF</button>
+                <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
+                    <button type="submit" formaction="/preview_cv" formtarget="_blank" class="btn-primary" style="flex:1;background:#edf2f7;color:#2d3748;border:2px solid #e2e8f0;">Preview CV</button>
+                    <button type="submit" formaction="/generate_cv" class="btn-primary" style="flex:1;">Download PDF</button>
+                </div>
             </form>
         </div>
 

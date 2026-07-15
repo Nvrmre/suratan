@@ -213,6 +213,41 @@ def generate_cv():
     return send_file(filepath, as_attachment=True, download_name=filename)
 
 
+@app.route('/preview_cv', methods=['POST'])
+def preview_cv():
+    d = collect_cv_data()
+    html_content = render_cv_html(d)
+
+    token = uuid.uuid4().hex[:12]
+    token_dir = os.path.join(TEMP_DIR, token)
+    os.makedirs(token_dir, exist_ok=True)
+    with open(os.path.join(token_dir, 'data.json'), 'w') as f:
+        json.dump(d, f)
+
+    return render_template('preview_cv.html', cv_html=html_content, token=token)
+
+
+@app.route('/generate_cv_from_token/<token>')
+def generate_cv_from_token(token):
+    token_dir = os.path.join(TEMP_DIR, token)
+    data_path = os.path.join(token_dir, 'data.json')
+    if not os.path.exists(data_path):
+        return 'Token tidak valid', 404
+
+    with open(data_path) as f:
+        d = json.load(f)
+
+    html_content = render_cv_html(d)
+
+    filename = f'cv_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'
+    filepath = os.path.join(GENERATED_DIR, filename)
+    HTML(string=html_content).write_pdf(filepath)
+
+    shutil.rmtree(token_dir, ignore_errors=True)
+
+    return send_file(filepath, as_attachment=True, download_name=filename)
+
+
 @app.route('/preview', methods=['POST'])
 def preview():
     d = collect_form_data()
