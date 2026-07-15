@@ -9,6 +9,7 @@ import io
 from datetime import datetime
 from werkzeug.utils import secure_filename
 from PIL import Image
+from deep_translator import GoogleTranslator
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
@@ -175,9 +176,10 @@ def render_letter_html(d):
     )
 
 
-def render_cv_html(d):
+def render_cv_html(d, lang='id'):
+    template = 'cv_en.html' if lang == 'en' else 'cv.html'
     return render_template(
-        'cv.html',
+        template,
         name=d['name'].strip(),
         email=d['email'].strip(),
         phone=d['phone'].strip(),
@@ -189,6 +191,53 @@ def render_cv_html(d):
         skills=d['skills'].strip(),
         certifications=d['certifications'],
     )
+
+
+def translate_cv_data(d):
+    translator = GoogleTranslator(source='id', target='en')
+    translated = dict(d)
+    if translated.get('summary'):
+        try:
+            translated['summary'] = translator.translate(translated['summary'])
+        except Exception:
+            pass
+    if translated.get('education'):
+        try:
+            edu = json.loads(translated['education'])
+            for e in edu:
+                for field in ['institution', 'degree', 'gpa']:
+                    if e.get(field):
+                        e[field] = translator.translate(e[field])
+            translated['education'] = json.dumps(edu)
+        except Exception:
+            pass
+    if translated.get('experience'):
+        try:
+            exp = json.loads(translated['experience'])
+            for e in exp:
+                for field in ['company', 'position', 'description']:
+                    if e.get(field):
+                        e[field] = translator.translate(e[field])
+            translated['experience'] = json.dumps(exp)
+        except Exception:
+            pass
+    if translated.get('skills'):
+        try:
+            skills = json.loads(translated['skills'])
+            translated['skills'] = json.dumps([translator.translate(s) for s in skills])
+        except Exception:
+            pass
+    if translated.get('certifications'):
+        try:
+            certs = json.loads(translated['certifications'])
+            for c in certs:
+                for field in ['name', 'issuer']:
+                    if c.get(field):
+                        c[field] = translator.translate(c[field])
+            translated['certifications'] = json.dumps(certs)
+        except Exception:
+            pass
+    return translated
 
 
 @app.route('/generate', methods=['POST'])
@@ -217,6 +266,33 @@ def generate_cv():
 def preview_cv():
     d = collect_cv_data()
     html_content = render_cv_html(d)
+
+    token = uuid.uuid4().hex[:12]
+    token_dir = os.path.join(TEMP_DIR, token)
+    os.makedirs(token_dir, exist_ok=True)
+    with open(os.path.join(token_dir, 'data.json'), 'w') as f:
+        json.dump(d, f)
+
+    return render_template('preview_cv.html', cv_html=html_content, token=token)
+
+
+@app.route('/generate_cv_en', methods=['POST'])
+def generate_cv_en():
+    d = collect_cv_data()
+    d = translate_cv_data(d)
+    html_content = render_cv_html(d, lang='en')
+
+    filename = f'cv_en_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'
+    filepath = os.path.join(GENERATED_DIR, filename)
+    HTML(string=html_content).write_pdf(filepath)
+    return send_file(filepath, as_attachment=True, download_name=filename)
+
+
+@app.route('/preview_cv_en', methods=['POST'])
+def preview_cv_en():
+    d = collect_cv_data()
+    d = translate_cv_data(d)
+    html_content = render_cv_html(d, lang='en')
 
     token = uuid.uuid4().hex[:12]
     token_dir = os.path.join(TEMP_DIR, token)
