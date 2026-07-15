@@ -262,45 +262,31 @@ def generate_cv():
     return send_file(filepath, as_attachment=True, download_name=filename)
 
 
-@app.route('/preview_cv', methods=['POST'])
-def preview_cv():
-    d = collect_cv_data()
-    html_content = render_cv_html(d)
-
-    token = uuid.uuid4().hex[:12]
-    token_dir = os.path.join(TEMP_DIR, token)
-    os.makedirs(token_dir, exist_ok=True)
-    with open(os.path.join(token_dir, 'data.json'), 'w') as f:
-        json.dump(d, f)
-
-    return render_template('preview_cv.html', cv_html=html_content, token=token)
-
-
 @app.route('/generate_cv_en', methods=['POST'])
 def generate_cv_en():
     d = collect_cv_data()
     d = translate_cv_data(d)
     html_content = render_cv_html(d, lang='en')
-
     filename = f'cv_en_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'
     filepath = os.path.join(GENERATED_DIR, filename)
     HTML(string=html_content).write_pdf(filepath)
     return send_file(filepath, as_attachment=True, download_name=filename)
 
 
-@app.route('/preview_cv_en', methods=['POST'])
-def preview_cv_en():
+@app.route('/preview_cv', methods=['POST'])
+def preview_cv():
     d = collect_cv_data()
-    d = translate_cv_data(d)
-    html_content = render_cv_html(d, lang='en')
+    html_id = render_cv_html(d)
+    d_en = translate_cv_data(d)
+    html_en = render_cv_html(d_en, lang='en')
 
     token = uuid.uuid4().hex[:12]
     token_dir = os.path.join(TEMP_DIR, token)
     os.makedirs(token_dir, exist_ok=True)
     with open(os.path.join(token_dir, 'data.json'), 'w') as f:
-        json.dump(d, f)
+        json.dump({'id': d, 'en': d_en}, f)
 
-    return render_template('preview_cv.html', cv_html=html_content, token=token)
+    return render_template('preview_cv.html', cv_html_id=html_id, cv_html_en=html_en, token=token)
 
 
 @app.route('/generate_cv_from_token/<token>')
@@ -311,11 +297,19 @@ def generate_cv_from_token(token):
         return 'Token tidak valid', 404
 
     with open(data_path) as f:
-        d = json.load(f)
+        data = json.load(f)
 
-    html_content = render_cv_html(d)
+    lang = request.args.get('lang', 'id')
+    if lang == 'en':
+        d = data.get('en', data['id'])
+        html_content = render_cv_html(d, lang='en')
+        label = 'en'
+    else:
+        d = data.get('id', data['id'])
+        html_content = render_cv_html(d)
+        label = 'id'
 
-    filename = f'cv_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'
+    filename = f'cv_{label}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'
     filepath = os.path.join(GENERATED_DIR, filename)
     HTML(string=html_content).write_pdf(filepath)
 

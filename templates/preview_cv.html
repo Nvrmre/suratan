@@ -13,7 +13,7 @@
             display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
         }
         .toolbar h2 { font-size: 16px; color: #2d3748; }
-        .toolbar .actions { display: flex; gap: 10px; }
+        .toolbar .actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .btn {
             padding: 10px 24px; border: none; border-radius: 8px;
             font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block;
@@ -23,11 +23,29 @@
         .btn-primary:hover { background: #3182ce; }
         .btn-secondary { background: #edf2f7; color: #4a5568; }
         .btn-secondary:hover { background: #e2e8f0; }
+
+        .toggle-wrap {
+            display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #4a5568;
+        }
+        .toggle {
+            position: relative; width: 48px; height: 26px; background: #cbd5e0; border-radius: 13px;
+            cursor: pointer; transition: background 0.2s; flex-shrink: 0;
+        }
+        .toggle.active { background: #4299e1; }
+        .toggle::after {
+            content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px;
+            background: white; border-radius: 50%; transition: transform 0.2s;
+        }
+        .toggle.active::after { transform: translateX(22px); }
+
         .paper {
             width: 210mm; min-height: 297mm; margin: 24px auto;
             background: white; box-shadow: 0 4px 24px rgba(0,0,0,0.1); padding: 0;
         }
         .paper-inner { padding: 2cm; }
+        .cv-content { display: none; }
+        .cv-content.active { display: block; }
+
         @media (max-width: 800px) {
             .paper { width: auto; margin: 12px; min-height: auto; }
             .paper-inner { padding: 16px; }
@@ -41,12 +59,50 @@
     <div class="toolbar">
         <h2>Preview CV</h2>
         <div class="actions">
+            <div class="toggle-wrap">
+                <span id="lang-label">ID</span>
+                <div class="toggle" id="lang-toggle" onclick="toggleLang()"></div>
+                <span>EN</span>
+            </div>
             <a href="/cv" class="btn btn-secondary">Kembali</a>
-            <a href="/generate_cv_from_token/{{ token }}" class="btn btn-primary">Download PDF</a>
+            <a href="/generate_cv_from_token/{{ token }}" class="btn btn-primary" id="dl-btn">Download PDF (ID)</a>
         </div>
     </div>
     <div class="paper">
-        <div class="paper-inner">{{ cv_html | safe }}</div>
+        <div class="paper-inner">
+            <div class="cv-content active" id="cv-id">{{ cv_html_id | safe }}</div>
+            <div class="cv-content" id="cv-en">{{ cv_html_en | safe }}</div>
+        </div>
     </div>
+
+    <script>
+        let currentLang = 'id';
+
+        function toggleLang() {
+            const toggle = document.getElementById('lang-toggle');
+            const idContent = document.getElementById('cv-id');
+            const enContent = document.getElementById('cv-en');
+            const dlBtn = document.getElementById('dl-btn');
+            const label = document.getElementById('lang-label');
+
+            if (currentLang === 'id') {
+                currentLang = 'en';
+                toggle.classList.add('active');
+                idContent.classList.remove('active');
+                enContent.classList.add('active');
+                dlBtn.href = '/generate_cv_from_token/{{ token }}?lang=en';
+                dlBtn.textContent = 'Download PDF (EN)';
+                label.textContent = '';
+            } else {
+                currentLang = 'id';
+                toggle.classList.remove('active');
+                enContent.classList.remove('active');
+                idContent.classList.add('active');
+                dlBtn.href = '/generate_cv_from_token/{{ token }}';
+                dlBtn.textContent = 'Download PDF (ID)';
+                label.textContent = 'ID';
+            }
+        }
+    </script>
 </body>
 </html>
