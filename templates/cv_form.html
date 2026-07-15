@@ -2,320 +2,294 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pembuat CV</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembuat CV &bull; Suratan</title>
     <style>
+        :root {
+            --primary: #1e3a5f;
+            --primary-light: #2b6cb0;
+            --accent: #e8b831;
+            --bg: #f1f4f8;
+            --surface: #ffffff;
+            --text: #1a202c;
+            --text-muted: #718096;
+            --border: #e2e8f0;
+            --radius: 12px;
+            --shadow-lg: 0 4px 24px rgba(0,0,0,0.08);
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            background: linear-gradient(135deg, #e8f0fe 0%, #f0f4f8 100%);
-            min-height: 100vh; padding: 24px 12px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg); color: var(--text); min-height: 100vh;
         }
-        .container { max-width: 860px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 16px; }
-        .header h1 { font-size: clamp(22px, 5vw, 30px); color: #1a365d; margin-bottom: 2px; }
-        .header p { color: #4a5568; font-size: clamp(13px, 3vw, 15px); }
+        .topbar {
+            background: var(--primary); color: white; padding: 0 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            height: 56px; position: sticky; top: 0; z-index: 50;
+        }
+        .topbar-brand { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px; }
+        .topbar-brand span { color: var(--accent); }
+        .topbar nav { display: flex; gap: 4px; }
+        .topbar nav a { color: rgba(255,255,255,0.75); text-decoration: none; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.15s; }
+        .topbar nav a:hover { color: white; background: rgba(255,255,255,0.1); }
+        .topbar nav a.active { color: white; background: rgba(255,255,255,0.15); }
 
-        .tab-nav {
-            display: flex; gap: 0; margin-bottom: 20px; background: #edf2f7;
-            border-radius: 12px; padding: 4px; overflow: hidden;
-        }
-        .tab-nav a {
-            flex: 1; text-align: center; padding: 10px 16px; font-size: 14px;
-            font-weight: 600; text-decoration: none; border-radius: 10px;
-            color: #4a5568; transition: all 0.2s; touch-action: manipulation;
-        }
-        .tab-nav a.active { background: white; color: #2b6cb0; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        .container { max-width: 880px; margin: 0 auto; padding: 32px 20px 48px; }
+        .page-title { margin-bottom: 28px; }
+        .page-title h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; color: var(--primary); }
+        .page-title p { color: var(--text-muted); font-size: 14px; margin-top: 2px; }
 
-        .card {
-            background: white; border-radius: 14px; box-shadow: 0 2px 16px rgba(0,0,0,0.06);
-            padding: clamp(16px, 4vw, 40px);
-        }
-        .section-title {
-            font-size: clamp(14px, 3.5vw, 16px); font-weight: 700; color: #2b6cb0;
-            margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0;
-        }
-        .section-title:not(:first-child) { margin-top: 24px; }
+        .card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: 36px 40px; border: 1px solid var(--border); }
 
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
-        .form-group { margin-bottom: 12px; }
+        .section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
+        .section-head .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+        .section-head h2 { font-size: 15px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .section-head:not(:first-child) { margin-top: 28px; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .form-group { margin-bottom: 6px; }
         .form-group.full { grid-column: 1 / -1; }
-        label { display: block; font-size: clamp(12px, 2.8vw, 13px); font-weight: 600; color: #2d3748; margin-bottom: 4px; }
-        label .required { color: #e53e3e; }
+        label { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+        label .req { color: #e53e3e; }
+        label .hint { font-weight: 400; color: var(--text-muted); font-size: 12px; }
+
         input, textarea {
-            width: 100%; padding: 12px 14px; border: 2px solid #e2e8f0; border-radius: 10px;
-            font-size: clamp(14px, 3vw, 15px); font-family: inherit; transition: border-color 0.2s;
-            background: #f7fafc; -webkit-appearance: none;
+            width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px;
+            font-size: 14px; font-family: inherit; transition: all 0.15s;
+            background: #fafbfc; color: var(--text); -webkit-appearance: none;
         }
-        input:focus, textarea:focus { outline: none; border-color: #4299e1; background: white; }
+        input:hover, textarea:hover { border-color: #cbd5e0; }
+        input:focus, textarea:focus { outline: none; border-color: var(--primary-light); background: white; box-shadow: 0 0 0 3px rgba(43,108,176,0.1); }
         textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
 
-        .entry { border: 2px solid #e2e8f0; border-radius: 10px; padding: 14px; margin-bottom: 10px; background: #f7fafc; }
+        .entry { border: 1.5px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 10px; background: #fafbfc; }
         .entry-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .entry-header h4 { font-size: 14px; color: #2d3748; }
-        .entry-remove {
-            background: none; border: none; color: #e53e3e; font-size: 22px;
-            cursor: pointer; padding: 0 4px; line-height: 1; touch-action: manipulation;
-        }
+        .entry-header h4 { font-size: 14px; color: var(--text); font-weight: 600; }
+        .entry-remove { background: none; border: none; color: #e53e3e; font-size: 20px; cursor: pointer; padding: 0 4px; line-height: 1; touch-action: manipulation; }
         .entry .form-row { gap: 8px; }
 
         .btn {
-            padding: 10px 20px; border: 2px solid #4299e1; background: white; color: #4299e1;
-            border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer;
+            padding: 8px 18px; border: 1.5px solid var(--primary-light); background: white; color: var(--primary-light);
+            border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;
             touch-action: manipulation; transition: background 0.15s; margin-top: 4px;
         }
         .btn:hover { background: #ebf8ff; }
 
-        .btn-primary {
-            flex: 1; padding: 16px; border: none; border-radius: 12px;
-            font-size: clamp(15px, 3.5vw, 17px); font-weight: 600; cursor: pointer;
-            touch-action: manipulation; text-align: center; transition: transform 0.15s;
-        }
-        .btn-primary:active { transform: scale(0.98); }
-        .btn-blue { background: linear-gradient(135deg, #4299e1, #3182ce); color: white; }
-        .btn-gray { background: #edf2f7; color: #2d3748; border: 2px solid #e2e8f0; }
+        .tags-input { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; border: 1.5px solid var(--border); border-radius: 8px; background: #fafbfc; min-height: 44px; align-items: center; }
+        .tag { background: var(--primary-light); color: white; padding: 3px 10px; border-radius: 20px; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+        .tag-remove { cursor: pointer; font-weight: bold; font-size: 15px; line-height: 1; }
+        .tags-input input { border: none !important; background: transparent !important; padding: 4px !important; min-height: auto !important; flex: 1; min-width: 80px; box-shadow: none !important; }
 
-        .btn-row {
-            display: flex; gap: 12px; margin-top: 8px;
+        .btn-row { display: flex; gap: 12px; margin-top: 24px; }
+        .btn-action {
+            flex: 1; padding: 12px 24px; border: none; border-radius: 8px;
+            font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+            text-align: center; touch-action: manipulation;
         }
-
-        .tags-input {
-            display: flex; flex-wrap: wrap; gap: 6px; padding: 8px;
-            border: 2px solid #e2e8f0; border-radius: 10px; background: #f7fafc; min-height: 48px; align-items: center;
-        }
-        .tag { background: #4299e1; color: white; padding: 4px 12px; border-radius: 20px; font-size: 13px; display: flex; align-items: center; gap: 6px; }
-        .tag-remove { cursor: pointer; font-weight: bold; font-size: 16px; line-height: 1; }
-        .tags-input input { border: none !important; background: transparent !important; padding: 4px !important; min-height: auto !important; flex: 1; min-width: 80px; }
+        .btn-action:active { transform: scale(0.98); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-light); }
+        .btn-secondary { background: #edf2f7; color: var(--text); border: 1.5px solid var(--border); }
+        .btn-secondary:hover { background: #e2e8f0; }
 
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center;
-            padding: 20px;
+            background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; padding: 20px;
         }
         .modal-overlay.active { display: flex; }
         .modal {
-            background: white; border-radius: 16px; padding: 28px; max-width: 400px; width: 100%;
+            background: white; border-radius: 14px; padding: 28px; max-width: 400px; width: 100%;
             box-shadow: 0 8px 32px rgba(0,0,0,0.15); text-align: center;
         }
-        .modal h3 { font-size: 18px; color: #1a365d; margin-bottom: 6px; }
-        .modal p { font-size: 14px; color: #4a5568; margin-bottom: 20px; }
+        .modal h3 { font-size: 18px; color: var(--primary); margin-bottom: 4px; }
+        .modal p { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }
         .modal-option {
-            display: block; width: 100%; padding: 14px; margin-bottom: 10px;
-            border: 2px solid #e2e8f0; border-radius: 10px; background: #f7fafc;
-            font-size: 15px; font-weight: 600; cursor: pointer; text-align: center;
-            transition: border-color 0.2s; touch-action: manipulation; text-decoration: none; color: inherit;
+            display: block; width: 100%; padding: 12px; margin-bottom: 8px;
+            border: 1.5px solid var(--border); border-radius: 8px; background: #fafbfc;
+            font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s;
+            touch-action: manipulation; color: var(--text);
         }
-        .modal-option:hover { border-color: #4299e1; background: #ebf8ff; }
-        .modal-close {
-            background: none; border: none; color: #a0aec0; font-size: 14px;
-            cursor: pointer; margin-top: 4px; padding: 4px;
-        }
+        .modal-option:hover { border-color: var(--primary-light); background: #ebf8ff; }
+        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 13px; cursor: pointer; margin-top: 4px; padding: 4px; }
 
-        .footer { text-align: center; margin-top: 16px; color: #a0aec0; font-size: clamp(11px, 2.5vw, 13px); }
+        .footer { text-align: center; margin-top: 20px; color: var(--text-muted); font-size: 13px; padding-bottom: 24px; }
 
-        @media (max-width: 640px) {
-            body { padding: 12px 8px; }
-            .form-row { grid-template-columns: 1fr; gap: 8px; }
+        @media (max-width: 768px) {
+            .card { padding: 24px; }
+            .form-row { grid-template-columns: 1fr; gap: 10px; }
             .btn-row { flex-direction: column; }
+        }
+        @media (max-width: 640px) {
+            .container { padding: 16px 12px 32px; }
+            .topbar { padding: 0 16px; }
+            .topbar nav a { padding: 6px 12px; font-size: 13px; }
+            .card { padding: 16px; border-radius: 10px; }
+            .page-title h1 { font-size: 20px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Pembuat Surat & CV</h1>
-            <p>Buat surat resmi dan CV ATS-friendly dalam format PDF</p>
-        </div>
 
-        <div class="tab-nav">
-            <a href="/">Surat</a>
-            <a href="/cv" class="active">CV / Resume</a>
-        </div>
+<div class="topbar">
+    <div class="topbar-brand">Suratan<span>.</span></div>
+    <nav>
+        <a href="/">Surat</a>
+        <a href="/cv" class="active">CV</a>
+        <a href="/proposal">Proposal</a>
+    </nav>
+</div>
 
-        <div class="card">
-            <form id="cv-form" action="/generate_cv" method="post">
-
-                <div class="section-title">Data Diri</div>
-                <div class="form-row">
-                    <div class="form-group full"><label>Nama Lengkap <span class="required">*</span></label><input type="text" name="name" required placeholder="Ahmad Fauzi"></div>
-                    <div class="form-group"><label>Email <span class="required">*</span></label><input type="email" name="email" required placeholder="ahmad@email.com"></div>
-                    <div class="form-group"><label>Telepon <span class="required">*</span></label><input type="text" name="phone" required placeholder="0812-3456-7890"></div>
-                    <div class="form-group full"><label>Alamat</label><input type="text" name="address" placeholder="Jl. Merdeka No. 1, Jakarta"></div>
-                    <div class="form-group full"><label>LinkedIn / Portfolio</label><input type="text" name="linkedin" placeholder="linkedin.com/in/ahmadfauzi"></div>
-                </div>
-
-                <div class="section-title">Ringkasan Profesional</div>
-                <div class="form-row">
-                    <div class="form-group full"><textarea name="summary" rows="3" placeholder="Tulis ringkasan singkat tentang diri Anda..."></textarea></div>
-                </div>
-
-                <div class="section-title">Pendidikan</div>
-                <div class="dynamic-section" id="edu-section">
-                    <div class="entry">
-                        <div class="entry-header"><h4>Pendidikan 1</h4></div>
-                        <div class="form-row">
-                            <div class="form-group full"><label>Institusi <span class="required">*</span></label><input type="text" name="edu_institution_0" placeholder="Universitas Indonesia" required></div>
-                            <div class="form-group"><label>Gelar <span class="required">*</span></label><input type="text" name="edu_degree_0" placeholder="S1 Teknik Informatika" required></div>
-                            <div class="form-group"><label>IPK</label><input type="text" name="edu_gpa_0" placeholder="3.75"></div>
-                            <div class="form-group"><label>Tahun Masuk</label><input type="text" name="edu_start_0" placeholder="2020"></div>
-                            <div class="form-group"><label>Tahun Lulus</label><input type="text" name="edu_end_0" placeholder="2024"></div>
-                        </div>
-                    </div>
-                </div>
-                <button type="button" class="btn" onclick="addEducation()">+ Tambah Pendidikan</button>
-
-                <div class="section-title">Pengalaman Kerja</div>
-                <div class="dynamic-section" id="exp-section">
-                    <div class="entry">
-                        <div class="entry-header"><h4>Pengalaman 1</h4></div>
-                        <div class="form-row">
-                            <div class="form-group full"><label>Perusahaan <span class="required">*</span></label><input type="text" name="exp_company_0" placeholder="PT. Maju Jaya"></div>
-                            <div class="form-group"><label>Posisi <span class="required">*</span></label><input type="text" name="exp_position_0" placeholder="Staff IT"></div>
-                            <div class="form-group"><label>Tahun Mulai</label><input type="text" name="exp_start_0" placeholder="2022"></div>
-                            <div class="form-group"><label>Tahun Selesai</label><input type="text" name="exp_end_0" placeholder="2024"></div>
-                            <div class="form-group full"><label>Deskripsi</label><textarea name="exp_desc_0" rows="2" placeholder="Jobdesc & pencapaian (pisahkan tiap poin dengan baris baru)"></textarea></div>
-                        </div>
-                    </div>
-                </div>
-                <button type="button" class="btn" onclick="addExperience()">+ Tambah Pengalaman</button>
-
-                <div class="section-title">Keahlian (Skills)</div>
-                <div class="form-row">
-                    <div class="form-group full">
-                        <label>Skill <span class="required">*</span> <span style="font-weight:400;color:#a0aec0;font-size:12px;">(enter untuk menambah)</span></label>
-                        <div class="tags-input" id="skills-container">
-                            <input type="text" id="skills-input" placeholder="Ketik skill lalu enter..." onkeydown="addSkill(event)">
-                        </div>
-                        <input type="hidden" name="skills" id="skills-hidden">
-                    </div>
-                </div>
-
-                <div class="section-title">Sertifikat (Opsional)</div>
-                <div class="dynamic-section" id="cert-section"></div>
-                <button type="button" class="btn" onclick="addCertification()">+ Tambah Sertifikat</button>
-
-                <div class="btn-row" style="margin-top:16px;">
-                    <button type="submit" formaction="/preview_cv" formtarget="_blank" class="btn-primary btn-gray" onclick="syncSkills()">Preview</button>
-                    <button type="button" class="btn-primary btn-blue" onclick="openDownloadModal()">Download PDF</button>
-                </div>
-            </form>
-        </div>
-
-        <div class="footer">Hasil dalam format PDF A4 &mdash; ATS-friendly</div>
+<div class="container">
+    <div class="page-title">
+        <h1>Buat CV / Resume</h1>
+        <p>CV ATS-friendly, bisa auto-translate ke Bahasa Inggris</p>
     </div>
 
-    <div class="modal-overlay" id="dl-modal" onclick="if(event.target===this)closeDownloadModal()">
-        <div class="modal">
-            <h3>Pilih Bahasa</h3>
-            <p>Dalam bahasa apa CV akan diunduh?</p>
-            <button class="modal-option" onclick="submitLang('id')">Bahasa Indonesia</button>
-            <button class="modal-option" onclick="submitLang('en')">English</button>
-            <button class="modal-option" onclick="submitLang('both')">Keduanya (ID + EN)</button>
-            <button class="modal-close" onclick="closeDownloadModal()">Batal</button>
-        </div>
+    <div class="card">
+        <form id="cv-form" action="/generate_cv" method="post">
+
+            <div class="section-head"><span class="dot"></span><h2>Data Diri</h2></div>
+            <div class="form-row">
+                <div class="form-group full"><label>Nama Lengkap <span class="req">*</span></label><input type="text" name="name" required placeholder="Ahmad Fauzi"></div>
+                <div class="form-group"><label>Email <span class="req">*</span></label><input type="email" name="email" required placeholder="ahmad@email.com"></div>
+                <div class="form-group"><label>Telepon <span class="req">*</span></label><input type="text" name="phone" required placeholder="0812-3456-7890"></div>
+                <div class="form-group full"><label>Alamat</label><input type="text" name="address" placeholder="Jl. Merdeka No. 1, Jakarta"></div>
+                <div class="form-group full"><label>LinkedIn / Portfolio</label><input type="text" name="linkedin" placeholder="linkedin.com/in/ahmadfauzi"></div>
+            </div>
+
+            <div class="section-head"><span class="dot"></span><h2>Ringkasan Profesional</h2></div>
+            <div class="form-row">
+                <div class="form-group full"><textarea name="summary" rows="3" placeholder="Tulis ringkasan singkat tentang diri Anda, keahlian utama, dan tujuan karir..."></textarea></div>
+            </div>
+
+            <div class="section-head"><span class="dot"></span><h2>Pendidikan</h2></div>
+            <div id="edu-section">
+                <div class="entry">
+                    <div class="entry-header"><h4>Pendidikan 1</h4></div>
+                    <div class="form-row">
+                        <div class="form-group full"><label>Institusi <span class="req">*</span></label><input type="text" name="edu_institution_0" placeholder="Universitas Indonesia" required></div>
+                        <div class="form-group"><label>Gelar <span class="req">*</span></label><input type="text" name="edu_degree_0" placeholder="S1 Teknik Informatika" required></div>
+                        <div class="form-group"><label>IPK</label><input type="text" name="edu_gpa_0" placeholder="3.75"></div>
+                        <div class="form-group"><label>Tahun Masuk</label><input type="text" name="edu_start_0" placeholder="2020"></div>
+                        <div class="form-group"><label>Tahun Lulus</label><input type="text" name="edu_end_0" placeholder="2024"></div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn" onclick="addEducation()">+ Tambah Pendidikan</button>
+
+            <div class="section-head"><span class="dot"></span><h2>Pengalaman Kerja</h2></div>
+            <div id="exp-section">
+                <div class="entry">
+                    <div class="entry-header"><h4>Pengalaman 1</h4></div>
+                    <div class="form-row">
+                        <div class="form-group full"><label>Perusahaan <span class="req">*</span></label><input type="text" name="exp_company_0" placeholder="PT. Maju Jaya"></div>
+                        <div class="form-group"><label>Posisi <span class="req">*</span></label><input type="text" name="exp_position_0" placeholder="Staff IT"></div>
+                        <div class="form-group"><label>Tahun Mulai</label><input type="text" name="exp_start_0" placeholder="2022"></div>
+                        <div class="form-group"><label>Tahun Selesai</label><input type="text" name="exp_end_0" placeholder="2024"></div>
+                        <div class="form-group full"><label>Deskripsi</label><textarea name="exp_desc_0" rows="2" placeholder="Tulis jobdesc & pencapaian, tiap poin di baris baru&#10;- Merancang sistem X&#10;- Meningkatkan efisiensi Y%"></textarea></div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn" onclick="addExperience()">+ Tambah Pengalaman</button>
+
+            <div class="section-head"><span class="dot"></span><h2>Keahlian</h2></div>
+            <div class="form-row">
+                <div class="form-group full">
+                    <label>Skills <span class="req">*</span> <span class="hint">&mdash; Enter untuk menambah</span></label>
+                    <div class="tags-input" id="skills-container">
+                        <input type="text" id="skills-input" placeholder="Ketik skill lalu tekan Enter..." onkeydown="addSkill(event)">
+                    </div>
+                    <input type="hidden" name="skills" id="skills-hidden">
+                </div>
+            </div>
+
+            <div class="section-head"><span class="dot"></span><h2>Sertifikat</h2></div>
+            <div id="cert-section"></div>
+            <button type="button" class="btn" onclick="addCertification()">+ Tambah Sertifikat</button>
+
+            <div class="btn-row" style="margin-top:20px;">
+                <button type="submit" formaction="/preview_cv" formtarget="_blank" class="btn-action btn-secondary" onclick="syncSkills()">Preview</button>
+                <button type="button" class="btn-action btn-primary" onclick="openDownloadModal()">Download PDF</button>
+            </div>
+        </form>
     </div>
+    <div class="footer"><a href="https://synkrn.biz.id" target="_blank" style="color:inherit;text-decoration:none;">SYNKRN TEKNOLOGI</a> &mdash; CV ATS-friendly &mdash; Auto-translate ID &harr; EN</div>
+</div>
 
-    <script>
-        let eduCount = 1, expCount = 1, certCount = 0;
+<div class="modal-overlay" id="dl-modal" onclick="if(event.target===this)closeDownloadModal()">
+    <div class="modal">
+        <h3>Pilih Bahasa</h3>
+        <p>Dalam bahasa apa CV akan diunduh?</p>
+        <button class="modal-option" onclick="submitLang('id')">Bahasa Indonesia</button>
+        <button class="modal-option" onclick="submitLang('en')">English</button>
+        <button class="modal-option" onclick="submitLang('both')">Keduanya (ID + EN)</button>
+        <button class="modal-close" onclick="closeDownloadModal()">Batal</button>
+    </div>
+</div>
 
-        function addEducation() {
-            const section = document.getElementById('edu-section');
-            const div = document.createElement('div'); div.className = 'entry';
-            div.innerHTML = `
-                <div class="entry-header"><h4>Pendidikan ${eduCount + 1}</h4><button type="button" class="entry-remove" onclick="this.closest('.entry').remove()">×</button></div>
-                <div class="form-row">
-                    <div class="form-group full"><label>Institusi</label><input type="text" name="edu_institution_${eduCount}" placeholder="Universitas"></div>
-                    <div class="form-group"><label>Gelar</label><input type="text" name="edu_degree_${eduCount}" placeholder="S1"></div>
-                    <div class="form-group"><label>IPK</label><input type="text" name="edu_gpa_${eduCount}" placeholder="3.75"></div>
-                    <div class="form-group"><label>Tahun Masuk</label><input type="text" name="edu_start_${eduCount}" placeholder="2020"></div>
-                    <div class="form-group"><label>Tahun Lulus</label><input type="text" name="edu_end_${eduCount}" placeholder="2024"></div>
-                </div>`;
-            section.appendChild(div); eduCount++;
+<script>
+    let eduCount = 1, expCount = 1, certCount = 0;
+
+    function addEducation() {
+        const s = document.getElementById('edu-section');
+        const d = document.createElement('div'); d.className = 'entry';
+        d.innerHTML = `<div class="entry-header"><h4>Pendidikan ${eduCount+1}</h4><button type="button" class="entry-remove" onclick="this.closest('.entry').remove()">×</button></div>
+            <div class="form-row"><div class="form-group full"><label>Institusi</label><input type="text" name="edu_institution_${eduCount}" placeholder="Universitas"></div>
+            <div class="form-group"><label>Gelar</label><input type="text" name="edu_degree_${eduCount}" placeholder="S1"></div>
+            <div class="form-group"><label>IPK</label><input type="text" name="edu_gpa_${eduCount}" placeholder="3.75"></div>
+            <div class="form-group"><label>Tahun Masuk</label><input type="text" name="edu_start_${eduCount}" placeholder="2020"></div>
+            <div class="form-group"><label>Tahun Lulus</label><input type="text" name="edu_end_${eduCount}" placeholder="2024"></div></div>`;
+        s.appendChild(d); eduCount++;
+    }
+    function addExperience() {
+        const s = document.getElementById('exp-section');
+        const d = document.createElement('div'); d.className = 'entry';
+        d.innerHTML = `<div class="entry-header"><h4>Pengalaman ${expCount+1}</h4><button type="button" class="entry-remove" onclick="this.closest('.entry').remove()">×</button></div>
+            <div class="form-row"><div class="form-group full"><label>Perusahaan</label><input type="text" name="exp_company_${expCount}" placeholder="PT. Maju Jaya"></div>
+            <div class="form-group"><label>Posisi</label><input type="text" name="exp_position_${expCount}" placeholder="Staff IT"></div>
+            <div class="form-group"><label>Tahun Mulai</label><input type="text" name="exp_start_${expCount}" placeholder="2022"></div>
+            <div class="form-group"><label>Tahun Selesai</label><input type="text" name="exp_end_${expCount}" placeholder="2024"></div>
+            <div class="form-group full"><label>Deskripsi</label><textarea name="exp_desc_${expCount}" rows="2" placeholder="Jobdesc & pencapaian"></textarea></div></div>`;
+        s.appendChild(d); expCount++;
+    }
+    function addCertification() {
+        const s = document.getElementById('cert-section');
+        const d = document.createElement('div'); d.className = 'entry';
+        d.innerHTML = `<div class="entry-header"><h4>Sertifikat ${certCount+1}</h4><button type="button" class="entry-remove" onclick="this.closest('.entry').remove()">×</button></div>
+            <div class="form-row"><div class="form-group full"><label>Nama Sertifikat</label><input type="text" name="cert_name_${certCount}" placeholder="AWS Certified"></div>
+            <div class="form-group"><label>Penerbit</label><input type="text" name="cert_issuer_${certCount}" placeholder="Amazon"></div>
+            <div class="form-group"><label>Tahun</label><input type="text" name="cert_year_${certCount}" placeholder="2024"></div></div>`;
+        s.appendChild(d); certCount++;
+    }
+    function addSkill(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const input = document.getElementById('skills-input');
+            const val = input.value.trim(); if (!val) return;
+            const container = document.getElementById('skills-container');
+            const tag = document.createElement('span'); tag.className = 'tag';
+            tag.innerHTML = val + ' <span class="tag-remove" onclick="this.parentElement.remove();syncSkills();">×</span>';
+            container.insertBefore(tag, input); input.value = ''; syncSkills();
         }
-
-        function addExperience() {
-            const section = document.getElementById('exp-section');
-            const div = document.createElement('div'); div.className = 'entry';
-            div.innerHTML = `
-                <div class="entry-header"><h4>Pengalaman ${expCount + 1}</h4><button type="button" class="entry-remove" onclick="this.closest('.entry').remove()">×</button></div>
-                <div class="form-row">
-                    <div class="form-group full"><label>Perusahaan</label><input type="text" name="exp_company_${expCount}" placeholder="PT. Maju Jaya"></div>
-                    <div class="form-group"><label>Posisi</label><input type="text" name="exp_position_${expCount}" placeholder="Staff IT"></div>
-                    <div class="form-group"><label>Tahun Mulai</label><input type="text" name="exp_start_${expCount}" placeholder="2022"></div>
-                    <div class="form-group"><label>Tahun Selesai</label><input type="text" name="exp_end_${expCount}" placeholder="2024"></div>
-                    <div class="form-group full"><label>Deskripsi</label><textarea name="exp_desc_${expCount}" rows="2" placeholder="Jobdesc & pencapaian"></textarea></div>
-                </div>`;
-            section.appendChild(div); expCount++;
+    }
+    function syncSkills() {
+        const tags = document.querySelectorAll('#skills-container .tag');
+        const skills = Array.from(tags).map(t => t.textContent.replace('×','').trim());
+        document.getElementById('skills-hidden').value = JSON.stringify(skills);
+    }
+    function openDownloadModal() { syncSkills(); document.getElementById('dl-modal').classList.add('active'); }
+    function closeDownloadModal() { document.getElementById('dl-modal').classList.remove('active'); }
+    function submitLang(lang) {
+        const form = document.getElementById('cv-form');
+        if (lang === 'id') { form.action = '/generate_cv'; form.target = ''; form.submit(); }
+        else if (lang === 'en') { form.action = '/generate_cv_en'; form.target = ''; form.submit(); }
+        else if (lang === 'both') {
+            form.action = '/generate_cv'; form.target = '_blank'; form.submit();
+            setTimeout(() => { form.action = '/generate_cv_en'; form.target = '_blank'; form.submit(); form.action = '/generate_cv'; form.target = ''; }, 500);
         }
-
-        function addCertification() {
-            const section = document.getElementById('cert-section');
-            const div = document.createElement('div'); div.className = 'entry';
-            div.innerHTML = `
-                <div class="entry-header"><h4>Sertifikat ${certCount + 1}</h4><button type="button" class="entry-remove" onclick="this.closest('.entry').remove()">×</button></div>
-                <div class="form-row">
-                    <div class="form-group full"><label>Nama Sertifikat</label><input type="text" name="cert_name_${certCount}" placeholder="AWS Certified"></div>
-                    <div class="form-group"><label>Penerbit</label><input type="text" name="cert_issuer_${certCount}" placeholder="Amazon"></div>
-                    <div class="form-group"><label>Tahun</label><input type="text" name="cert_year_${certCount}" placeholder="2024"></div>
-                </div>`;
-            section.appendChild(div); certCount++;
-        }
-
-        function addSkill(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const input = document.getElementById('skills-input');
-                const val = input.value.trim();
-                if (!val) return;
-                const container = document.getElementById('skills-container');
-                const tag = document.createElement('span'); tag.className = 'tag';
-                tag.innerHTML = val + ' <span class="tag-remove" onclick="this.parentElement.remove();syncSkills();">×</span>';
-                container.insertBefore(tag, input);
-                input.value = ''; syncSkills();
-            }
-        }
-
-        function syncSkills() {
-            const tags = document.querySelectorAll('#skills-container .tag');
-            const skills = Array.from(tags).map(t => t.textContent.replace('×', '').trim());
-            document.getElementById('skills-hidden').value = JSON.stringify(skills);
-        }
-
-        function openDownloadModal() {
-            syncSkills();
-            document.getElementById('dl-modal').classList.add('active');
-        }
-
-        function closeDownloadModal() {
-            document.getElementById('dl-modal').classList.remove('active');
-        }
-
-        function submitLang(lang) {
-            const form = document.getElementById('cv-form');
-            form.action = '/generate_cv';
-            form.target = '';
-
-            if (lang === 'id') {
-                form.submit();
-            } else if (lang === 'en') {
-                form.action = '/generate_cv_en';
-                form.submit();
-            } else if (lang === 'both') {
-                form.action = '/generate_cv';
-                form.target = '_blank';
-                form.submit();
-                setTimeout(() => {
-                    form.action = '/generate_cv_en';
-                    form.target = '_blank';
-                    form.submit();
-                    form.action = '/generate_cv';
-                    form.target = '';
-                }, 500);
-            }
-            closeDownloadModal();
-        }
-
-        document.querySelector('form').addEventListener('submit', syncSkills);
-    </script>
+        closeDownloadModal();
+    }
+    document.querySelector('form').addEventListener('submit', syncSkills);
+</script>
 </body>
 </html>

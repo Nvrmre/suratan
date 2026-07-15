@@ -370,6 +370,15 @@ def generate_from_token(token):
     return send_file(filepath, as_attachment=True, download_name=filename)
 
 
+@app.template_filter('rupiah')
+def rupiah_filter(value):
+    try:
+        v = int(float(value))
+        return f'Rp{v:,}'.replace(',', '.')
+    except (ValueError, TypeError):
+        return f'Rp0'
+
+
 def _img_to_b64(file):
     img = Image.open(file.stream).convert('RGBA')
     buf = io.BytesIO()
@@ -385,6 +394,173 @@ def _format_date(date_str):
         return f'{dt.day} {bulan[dt.month - 1]} {dt.year}'
     except (ValueError, IndexError):
         return date_str
+
+
+@app.template_filter('extract_city')
+def extract_city(address):
+    if not address:
+        return ''
+    parts = [p.strip() for p in address.split(',')]
+    if len(parts) >= 3:
+        return parts[-2]
+    return parts[-1] if parts else ''
+
+
+# ── Proposal ─────────────────────────────────────────────────────────
+
+def _num(val):
+    try:
+        return int(val.replace('.', ''))
+    except (ValueError, AttributeError):
+        try:
+            return int(val)
+        except (ValueError, TypeError):
+            return 0
+
+
+@app.route('/proposal')
+def proposal_form():
+    today = datetime.now().strftime('%Y-%m-%d')
+    return render_template('proposal_form.html', today=today)
+
+
+def collect_proposal_data():
+    d = {}
+    for field in ['company_name', 'company_address', 'company_phone', 'company_email', 'company_website',
+                  'proposal_no', 'recipient', 'recipient_address', 'title',
+                  'background', 'scope', 'payment_terms', 'date', 'ppn']:
+        d[field] = request.form.get(field, '')
+
+    logo_b64 = None
+    logo = request.files.get('logo')
+    if logo and logo.filename:
+        logo_b64 = _img_to_b64(logo)
+    elif request.form.get('logo_b64'):
+        logo_b64 = request.form.get('logo_b64')
+
+    sig_b64 = None
+    ttd = request.files.get('signature')
+    if ttd and ttd.filename:
+        sig_b64 = _img_to_b64(ttd)
+    elif request.form.get('signature_b64'):
+        sig_b64 = request.form.get('signature_b64')
+
+    d['logo_b64'] = logo_b64
+    d['signature_b64'] = sig_b64
+
+    raw = request.form.get('items', '[]')
+    try:
+        items = json.loads(raw)
+    except (json.JSONDecodeError, TypeError):
+        items = []
+    for item in items:
+        qty = _num(item.get('qty', '0'))
+        harga = _num(item.get('harga', '0'))
+        item['qty'] = qty
+        item['harga'] = harga
+        item['jumlah'] = qty * harga
+    d['items'] = json.dumps(items)
+
+    subtotal = sum(item.get('jumlah', 0) for item in items)
+    ppn_pct = _num(d.get('ppn', '0'))
+    ppn_val = subtotal * ppn_pct // 100
+    grand_total = subtotal + ppn_val
+    d['subtotal'] = subtotal
+    d['ppn_val'] = ppn_val
+    d['grand_total'] = grand_total
+
+    return d
+
+
+def render_proposal_html(d):
+    date_formatted = _format_date(d['date'])
+    return render_template(
+        'proposal.html',
+        company_name=d['company_name'].strip(),
+        company_address=d['company_address'].strip(),
+        company_phone=d['company_phone'].strip(),
+        company_email=d['company_email'].strip(),
+        company_website=d['company_website'].strip(),
+        proposal_no=d['proposal_no'].strip(),
+        recipient=d['recipient'].strip(),
+        recipient_address=d['recipient_address'].strip(),
+        title=d['title'].strip(),
+        background=d['background'].strip(),
+        scope=d['scope'].strip(),
+        payment_terms=d['payment_terms'].strip(),
+        date=date_formatted,
+        date_str=d['date'],
+        logo_b64=d['logo_b64'],
+        signature_b64=d['signature_b64'],
+        items=d['items'],
+        subtotal=d['subtotal'],
+        ppn=d['ppn'],
+        ppn_val=d['ppn_val'],
+        grand_total=d['grand_total'],
+    )
+
+
+@app.route('/preview_proposal', methods=['POST'])
+def preview_proposal():
+    d = collect_proposal_data()
+    html_content = render_proposal_html(d)
+
+    token = uuid.uuid4().hex[:12]
+    token_dir = os.path.join(TEMP_DIR, token)
+    os.makedirs(token_dir, exist_ok=True)
+
+    with open(os.path.join(token_dir, 'data.json'), 'w') as f:
+        json.dump(d, f)
+
+    if d['logo_b64']:
+        with open(os.path.join(token_dir, 'logo.txt'), 'w') as f:
+            f.write(d['logo_b64'])
+    if d['signature_b64']:
+        with open(os.path.join(token_dir, 'sig.txt'), 'w') as f:
+            f.write(d['signature_b64'])
+
+    return render_template('preview_proposal.html', proposal_html=html_content, token=token)
+
+
+@app.route('/generate_proposal', methods=['POST'])
+def generate_proposal():
+    d = collect_proposal_data()
+    html_content = render_proposal_html(d)
+
+    filename = f'proposal_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'
+    filepath = os.path.join(GENERATED_DIR, filename)
+    HTML(string=html_content).write_pdf(filepath)
+    return send_file(filepath, as_attachment=True, download_name=filename)
+
+
+@app.route('/generate_proposal_from_token/<token>')
+def generate_proposal_from_token(token):
+    token_dir = os.path.join(TEMP_DIR, token)
+    data_path = os.path.join(token_dir, 'data.json')
+    if not os.path.exists(data_path):
+        return 'Token tidak valid', 404
+
+    with open(data_path) as f:
+        d = json.load(f)
+
+    logo_path = os.path.join(token_dir, 'logo.txt')
+    if os.path.exists(logo_path):
+        with open(logo_path) as f:
+            d['logo_b64'] = f.read()
+    sig_path = os.path.join(token_dir, 'sig.txt')
+    if os.path.exists(sig_path):
+        with open(sig_path) as f:
+            d['signature_b64'] = f.read()
+
+    html_content = render_proposal_html(d)
+
+    filename = f'proposal_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'
+    filepath = os.path.join(GENERATED_DIR, filename)
+    HTML(string=html_content).write_pdf(filepath)
+
+    shutil.rmtree(token_dir, ignore_errors=True)
+
+    return send_file(filepath, as_attachment=True, download_name=filename)
 
 
 if __name__ == '__main__':

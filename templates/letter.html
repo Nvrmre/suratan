@@ -75,7 +75,7 @@
 <div class="lamaran-title">SURAT LAMARAN KERJA</div>
 
 <div style="margin-bottom:12px;">
-    {% set city = recipient_address.split(',')[0] if ',' in recipient_address else recipient_address %}
+    {% set city = recipient_address | extract_city %}
     {{ city }}, {{ date }}
 </div>
 
@@ -186,7 +186,7 @@
 </div>
 
 <div class="signature">
-    <p>{{ company_address.split(',')[0] if ',' in company_address else company_address }}, {{ date }}</p>
+    <p>{{ company_address | extract_city }}, {{ date }}</p>
     <p>Hormat kami,</p>
     {% if signature_b64 %}
     <div class="sig-image"><img src="{{ signature_b64 }}" alt="ttd"></div>
@@ -253,7 +253,7 @@
 </div>
 
 <div class="signature">
-    <p>{{ company_address.split(',')[0] if ',' in company_address else company_address }}, {{ date }}</p>
+    <p>{{ company_address | extract_city }}, {{ date }}</p>
     <p>Hormat kami,</p>
     {% if signature_b64 %}
     <div class="sig-image"><img src="{{ signature_b64 }}" alt="ttd"></div>
@@ -323,7 +323,7 @@
 </div>
 
 <div class="signature">
-    <p>{{ company_address.split(',')[0] if ',' in company_address else company_address }}, {{ date }}</p>
+    <p>{{ company_address | extract_city }}, {{ date }}</p>
     <p>Hormat kami,</p>
     {% if signature_b64 %}
     <div class="sig-image"><img src="{{ signature_b64 }}" alt="ttd"></div>
@@ -391,7 +391,7 @@
 </div>
 
 <div class="signature">
-    <p>{{ company_address.split(',')[0] if ',' in company_address else company_address }}, {{ date }}</p>
+    <p>{{ company_address | extract_city }}, {{ date }}</p>
     <p>Hormat kami,</p>
     {% if signature_b64 %}
     <div class="sig-image"><img src="{{ signature_b64 }}" alt="ttd"></div>
@@ -403,7 +403,7 @@
 
 {% endif %}
 
-<div class="footer-note">Dokumen ini dibuat secara elektronik.</div>
+<div class="footer-note">Dokumen ini dibuat secara elektronik &mdash; <strong>SYNKRN TEKNOLOGI</strong> (<a href="https://synkrn.biz.id" style="color:inherit;">synkrn.biz.id</a>)</div>
 
 </body>
 </html>

@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Preview Surat &bull; Suratan</title>
+    <title>Preview Proposal &bull; Suratan</title>
     <style>
         :root {
             --primary: #1e3a5f;
-            --primary-light: #2b6cb0;
             --accent: #e8b831;
             --bg: #e2e8f0;
             --text: #1a202c;
@@ -34,15 +33,10 @@
         .btn-secondary:hover { background: rgba(255,255,255,0.25); }
         .btn:active { transform: scale(0.98); }
 
-        .paper {
-            width: 210mm; min-height: 297mm; margin: 24px auto;
-            background: white; box-shadow: 0 4px 24px rgba(0,0,0,0.1); padding: 0;
-        }
-        .paper-inner { padding: 2.5cm 2.5cm 2.5cm 3cm; }
+        .paper { width: 210mm; min-height: 297mm; margin: 24px auto; background: white; box-shadow: 0 4px 24px rgba(0,0,0,0.1); padding: 2.5cm; }
 
         @media (max-width: 800px) {
-            .paper { width: auto; margin: 12px; min-height: auto; }
-            .paper-inner { padding: 20px; }
+            .paper { width: auto; margin: 12px; min-height: auto; padding: 20px; }
             .toolbar { padding: 10px 16px; }
             .toolbar h2 { font-size: 14px; }
             .btn { padding: 8px 16px; font-size: 13px; }
@@ -51,16 +45,14 @@
 </head>
 <body>
     <div class="toolbar">
-        <h2>Preview Surat</h2>
+        <h2>Preview Proposal</h2>
         <div class="actions">
-            <a href="/" class="btn btn-secondary">Kembali</a>
-            <a href="/generate_from_token/{{ token }}" class="btn btn-primary">Download PDF</a>
+            <a href="/proposal" class="btn btn-secondary">Kembali</a>
+            <a href="/generate_proposal_from_token/{{ token }}" class="btn btn-primary">Download PDF</a>
         </div>
     </div>
     <div class="paper">
-        <div class="paper-inner">
-            {{ letter_html | safe }}
-        </div>
+        {{ proposal_html | safe }}
     </div>
 </body>
 </html>

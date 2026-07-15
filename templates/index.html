@@ -2,339 +2,364 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pembuat Surat & CV</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembuat Surat &bull; Suratan</title>
     <style>
+        :root {
+            --primary: #1e3a5f;
+            --primary-light: #2b6cb0;
+            --accent: #e8b831;
+            --bg: #f1f4f8;
+            --surface: #ffffff;
+            --text: #1a202c;
+            --text-muted: #718096;
+            --border: #e2e8f0;
+            --radius: 12px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-lg: 0 4px 24px rgba(0,0,0,0.08);
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            background: linear-gradient(135deg, #e8f0fe 0%, #f0f4f8 100%);
-            min-height: 100vh;
-            padding: 24px 12px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg); color: var(--text); min-height: 100vh;
         }
-        .container { max-width: 860px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 16px; }
-        .header h1 { font-size: clamp(22px, 5vw, 30px); color: #1a365d; margin-bottom: 2px; }
-        .header p { color: #4a5568; font-size: clamp(13px, 3vw, 15px); }
+        .topbar {
+            background: var(--primary); color: white; padding: 0 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            height: 56px; position: sticky; top: 0; z-index: 50;
+        }
+        .topbar-brand {
+            font-size: 18px; font-weight: 700; letter-spacing: -0.3px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .topbar-brand span { color: var(--accent); }
+        .topbar nav { display: flex; gap: 4px; }
+        .topbar nav a {
+            color: rgba(255,255,255,0.75); text-decoration: none; padding: 8px 16px;
+            border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.15s;
+        }
+        .topbar nav a:hover { color: white; background: rgba(255,255,255,0.1); }
+        .topbar nav a.active { color: white; background: rgba(255,255,255,0.15); }
 
-        .tab-nav {
-            display: flex; gap: 0; margin-bottom: 20px; background: #edf2f7;
-            border-radius: 12px; padding: 4px; overflow: hidden;
-        }
-        .tab-nav a {
-            flex: 1; text-align: center; padding: 10px 16px; font-size: 14px;
-            font-weight: 600; text-decoration: none; border-radius: 10px;
-            color: #4a5568; transition: all 0.2s; touch-action: manipulation;
-        }
-        .tab-nav a.active {
-            background: white; color: #2b6cb0; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-        }
+        .container { max-width: 880px; margin: 0 auto; padding: 32px 20px 48px; }
+        .page-title { margin-bottom: 28px; }
+        .page-title h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; color: var(--primary); }
+        .page-title p { color: var(--text-muted); font-size: 14px; margin-top: 2px; }
 
         .card {
-            background: white; border-radius: 14px; box-shadow: 0 2px 16px rgba(0,0,0,0.06);
-            padding: clamp(16px, 4vw, 40px);
+            background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+            padding: 36px 40px; border: 1px solid var(--border);
         }
-        .section-title {
-            font-size: clamp(14px, 3.5vw, 16px); font-weight: 700; color: #2b6cb0;
-            margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0;
-            display: flex; align-items: center; gap: 6px;
+        .section-head {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+            padding-bottom: 10px; border-bottom: 2px solid var(--border);
         }
-        .section-title:not(:first-child) { margin-top: 24px; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
-        .form-group { margin-bottom: 12px; }
+        .section-head .dot {
+            width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0;
+        }
+        .section-head h2 {
+            font-size: 15px; font-weight: 600; color: var(--primary); text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .section-head:not(:first-child) { margin-top: 28px; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .form-group { margin-bottom: 6px; }
         .form-group.full { grid-column: 1 / -1; }
-        .form-group.half { grid-column: span 1; }
-        label { display: block; font-size: clamp(12px, 2.8vw, 13px); font-weight: 600; color: #2d3748; margin-bottom: 4px; }
-        label .required { color: #e53e3e; }
-        input, select, textarea {
-            width: 100%; padding: 12px 14px; border: 2px solid #e2e8f0; border-radius: 10px;
-            font-size: clamp(14px, 3vw, 15px); font-family: inherit; transition: border-color 0.2s;
-            background: #f7fafc; -webkit-appearance: none; appearance: none;
+        label {
+            display: block; font-size: 13px; font-weight: 600; color: var(--text);
+            margin-bottom: 5px;
         }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: #4299e1; background: white; }
-        textarea { resize: vertical; min-height: 140px; line-height: 1.5; }
+        label .req { color: #e53e3e; }
+        label .hint { font-weight: 400; color: var(--text-muted); font-size: 12px; }
+
+        input, select, textarea {
+            width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px;
+            font-size: 14px; font-family: inherit; transition: all 0.15s;
+            background: #fafbfc; color: var(--text); -webkit-appearance: none; appearance: none;
+        }
+        input:hover, select:hover, textarea:hover { border-color: #cbd5e0; }
+        input:focus, select:focus, textarea:focus {
+            outline: none; border-color: var(--primary-light); background: white;
+            box-shadow: 0 0 0 3px rgba(43,108,176,0.1);
+        }
+        textarea { resize: vertical; min-height: 130px; line-height: 1.6; }
         select {
             cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234a5568' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
             background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px;
         }
-        input[type="date"] { min-height: 48px; }
-        input[type="file"] { padding: 10px; background: white; cursor: pointer; min-height: 48px; }
+        input[type="file"] {
+            padding: 8px; background: white; cursor: pointer; min-height: 44px;
+        }
         input[type="file"]::file-selector-button {
-            padding: 6px 14px; border: none; border-radius: 6px; background: #4299e1;
-            color: white; font-weight: 600; font-size: clamp(12px, 2.8vw, 13px);
-            cursor: pointer; margin-right: 10px;
+            padding: 6px 14px; border: none; border-radius: 6px; background: var(--primary-light);
+            color: white; font-weight: 500; font-size: 13px; cursor: pointer; margin-right: 10px;
         }
-        .file-hint { font-size: clamp(11px, 2.5vw, 12px); color: #a0aec0; margin-top: 3px; }
-        .preview { margin-top: 8px; max-width: 100%; max-height: 90px; display: none; border-radius: 6px; }
-
-        .btn {
-            width: 100%; padding: 16px; background: linear-gradient(135deg, #4299e1, #3182ce);
-            color: white; border: none; border-radius: 12px;
-            font-size: clamp(15px, 3.5vw, 17px); font-weight: 600; cursor: pointer;
-            transition: transform 0.15s, box-shadow 0.15s; margin-top: 4px;
-            -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-        }
-        .btn:active { transform: scale(0.98); }
-        .btn-secondary {
-            background: #edf2f7; color: #2d3748; border: 2px solid #e2e8f0;
-        }
-        .btn-secondary:hover { background: #e2e8f0; }
-        .btn-group { display: flex; gap: 12px; margin-top: 4px; }
-        .btn-group .btn { flex: 1; }
+        .file-hint { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+        .preview-thumb { margin-top: 8px; max-width: 100%; max-height: 70px; display: none; border-radius: 6px; border: 1px solid var(--border); }
 
         .type-field { display: none; }
 
-        .cv-body textarea { min-height: 100px; }
-        .cv-help {
-            background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px;
-            padding: 10px 14px; font-size: 13px; color: #92400e; margin-bottom: 12px; line-height: 1.5;
+        .table-builder { border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden; background: #fafbfc; }
+        .table-builder table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .table-builder th, .table-builder td { border: 1px solid var(--border); padding: 3px; }
+        .table-builder th { background: #edf2f7; }
+        .tbl-rm-col { width: 32px; min-width: 32px; max-width: 32px; padding: 0 !important; text-align: center; }
+        .tbl-input {
+            width: 100%; border: none !important; padding: 7px 6px !important; font-size: 13px !important;
+            background: transparent !important; border-radius: 0 !important; min-height: 32px !important;
         }
-        .cv-help code { background: #fef3c7; padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+        .tbl-input:focus { background: white !important; box-shadow: inset 0 0 0 2px var(--primary-light); }
+        .tbl-del {
+            background: none; border: none; color: #e53e3e; font-size: 18px; cursor: pointer;
+            padding: 2px 4px; line-height: 1; border-radius: 4px; touch-action: manipulation;
+        }
+        .table-actions { display: flex; gap: 6px; padding: 8px 10px; flex-wrap: wrap; }
+        .tbl-btn {
+            padding: 6px 14px; border: 1.5px solid var(--primary-light); background: white;
+            color: var(--primary-light); border-radius: 6px; font-size: 13px; font-weight: 500;
+            cursor: pointer; touch-action: manipulation; transition: background 0.15s;
+        }
+        .tbl-btn:hover { background: #ebf8ff; }
+        .tbl-btn-secondary { border-color: var(--border); color: var(--text-muted); }
+        .tbl-btn-secondary:hover { background: #f7fafc; }
 
-        .footer { text-align: center; margin-top: 16px; color: #a0aec0; font-size: clamp(11px, 2.5vw, 13px); }
+        .btn-row { display: flex; gap: 12px; margin-top: 28px; }
+        .btn {
+            flex: 1; padding: 12px 24px; border: none; border-radius: 8px;
+            font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+            text-align: center; text-decoration: none; touch-action: manipulation;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary {
+            background: var(--primary); color: white;
+        }
+        .btn-primary:hover { background: var(--primary-light); }
+        .btn-secondary {
+            background: #edf2f7; color: var(--text); border: 1.5px solid var(--border);
+        }
+        .btn-secondary:hover { background: #e2e8f0; }
 
+        .footer {
+            text-align: center; margin-top: 20px; color: var(--text-muted);
+            font-size: 13px; padding-bottom: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .card { padding: 24px; }
+            .form-row { grid-template-columns: 1fr; gap: 10px; }
+            .btn-row { flex-direction: column; }
+        }
         @media (max-width: 640px) {
-            body { padding: 12px 8px; }
-            .form-row { grid-template-columns: 1fr; gap: 8px; }
-            .form-group.half { grid-column: 1 / -1; }
-            .form-group { margin-bottom: 8px; }
-            input, select, textarea { padding: 14px; }
-            .btn { padding: 18px; }
-            .btn-group { flex-direction: column; }
-        }
-        @media (max-width: 400px) {
-            .card { padding: 12px; border-radius: 10px; }
-            .section-title { font-size: 13px; }
-            input[type="file"]::file-selector-button { display: block; margin-bottom: 6px; }
+            .container { padding: 16px 12px 32px; }
+            .topbar { padding: 0 16px; }
+            .topbar nav a { padding: 6px 12px; font-size: 13px; }
+            .card { padding: 16px; border-radius: 10px; }
+            .page-title h1 { font-size: 20px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Pembuat Surat & CV</h1>
-            <p>Buat surat resmi dan CV ATS-friendly dalam format PDF</p>
-        </div>
 
-        <div class="tab-nav">
-            <a href="/" class="active">Surat</a>
-            <a href="/cv">CV / Resume</a>
-        </div>
+<div class="topbar">
+    <div class="topbar-brand">Suratan<span>.</span></div>
+    <nav>
+        <a href="/" class="active">Surat</a>
+        <a href="/cv">CV</a>
+        <a href="/proposal">Proposal</a>
+    </nav>
+</div>
 
-        <div class="card">
-            <form action="/generate" method="post" enctype="multipart/form-data">
-
-                <div class="section-title">Jenis & Informasi Surat</div>
-                <div class="form-row">
-                    <div class="form-group half">
-                        <label>Jenis Surat <span class="required">*</span></label>
-                        <select name="letter_type" id="letter_type" onchange="toggleTypeFields()" required>
-                            {% for key, label in letter_types.items() %}
-                            <option value="{{ key }}">{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group half">
-                        <label>Tanggal <span class="required">*</span></label>
-                        <input type="date" name="date" value="{{ today }}" required>
-                    </div>
-
-                    <div class="form-group full type-field type-lamaran" style="display:none">
-                        <label>Posisi yang Dilamar <span class="required">*</span></label>
-                        <input type="text" name="position" placeholder="Misal: Staff Administrasi, Marketing, IT Support">
-                    </div>
-
-                    <div class="form-group full type-field type-undangan type-pemberitahuan" style="display:none">
-                        <label>Tujuan / Kepada <span class="required">*</span></label>
-                        <input type="text" name="recipient" placeholder="Nama perusahaan / instansi / orang">
-                    </div>
-                    <div class="form-group full type-field type-undangan type-pemberitahuan" style="display:none">
-                        <label>Alamat Tujuan <span class="required">*</span></label>
-                        <input type="text" name="recipient_address" placeholder="Jl. Contoh No. 123, Kota">
-                    </div>
-                </div>
-
-                <div class="section-title type-field type-undangan" style="display:none">Detail Acara</div>
-                <div class="form-row type-field type-undangan" style="display:none">
-                    <div class="form-group half"><label>Nama Acara</label><input type="text" name="event_name" placeholder="Misal: Rapat Tahunan"></div>
-                    <div class="form-group half"><label>Tanggal Acara</label><input type="date" name="event_date"></div>
-                    <div class="form-group half"><label>Waktu</label><input type="text" name="event_time" placeholder="09.00 WIB - selesai"></div>
-                    <div class="form-group full"><label>Tempat</label><input type="text" name="event_place" placeholder="Aula Gedung Lt. 3"></div>
-                </div>
-
-                <div class="section-title type-field type-umum type-penawaran type-pemberitahuan" style="display:none">Kop Surat</div>
-                <div class="form-row type-field type-umum type-penawaran type-pemberitahuan" style="display:none">
-                    <div class="form-group full">
-                        <label>Nama Perusahaan / Instansi <span class="required">*</span></label>
-                        <input type="text" name="company_name" placeholder="CV. Contoh Jaya">
-                    </div>
-                    <div class="form-group full">
-                        <label>Alamat <span class="required">*</span></label>
-                        <input type="text" name="company_address" placeholder="Jl. Merdeka No. 123, Kota, Provinsi, Kode Pos">
-                    </div>
-                    <div class="form-group half"><label>Telepon</label><input type="text" name="company_phone" placeholder="(021) 1234-5678"></div>
-                    <div class="form-group half"><label>Email</label><input type="email" name="company_email" placeholder="info@perusahaan.com"></div>
-                    <div class="form-group half"><label>Website</label><input type="text" name="company_website" placeholder="www.perusahaan.com"></div>
-                    <div class="form-group half">
-                        <label>Logo Perusahaan</label>
-                        <input type="file" name="logo" accept="image/png,image/jpeg,image/gif,image/webp" onchange="previewImg(this,'logo-preview')">
-                        <div class="file-hint">PNG transparan paling baik</div>
-                        <img class="preview" id="logo-preview">
-                    </div>
-                </div>
-
-                <div class="section-title">Isi Surat</div>
-                <div class="form-row">
-                    <div class="form-group half type-field type-umum type-penawaran type-pemberitahuan" style="display:none">
-                        <label>Tujuan / Kepada <span class="required">*</span></label>
-                        <input type="text" name="recipient" placeholder="Nama perusahaan / instansi / orang">
-                    </div>
-                    <div class="form-group half type-field type-umum type-penawaran type-pemberitahuan" style="display:none">
-                        <label>Alamat Tujuan <span class="required">*</span></label>
-                        <input type="text" name="recipient_address" placeholder="Jl. Contoh No. 123, Kota">
-                    </div>
-                    <div class="form-group full type-field type-umum type-penawaran type-lamaran type-pemberitahuan" style="display:none">
-                        <label>Perihal / Subjek <span class="required">*</span></label>
-                        <input type="text" name="subject" placeholder="Misal: Penawaran Produk, Lamaran Pekerjaan, Undangan Rapat, dll">
-                    </div>
-                    <div class="form-group full">
-                        <label>Isi Surat <span class="required">*</span></label>
-                        <textarea name="body" placeholder="Tulis isi surat di sini..." required></textarea>
-                    </div>
-                </div>
-
-                <div class="section-title type-field type-umum type-penawaran type-pemberitahuan" style="display:none">Tabel (Opsional)</div>
-                <div class="form-row type-field type-umum type-penawaran type-pemberitahuan" style="display:none">
-                    <div class="form-group full">
-                        <div class="table-builder" id="table-builder">
-                            <table id="table-editor">
-                                <thead><tr>
-                                    <th><input type="text" class="tbl-input" data-col="0" data-row="0" placeholder="Kolom 1"></th>
-                                    <th><input type="text" class="tbl-input" data-col="1" data-row="0" placeholder="Kolom 2"></th>
-                                    <th><input type="text" class="tbl-input" data-col="2" data-row="0" placeholder="Kolom 3"></th>
-                                    <th class="tbl-rm-col"></th>
-                                </tr></thead>
-                                <tbody id="table-body">
-                                    <tr>
-                                        <td><input type="text" class="tbl-input" data-col="0" data-row="1" placeholder="Isi"></td>
-                                        <td><input type="text" class="tbl-input" data-col="1" data-row="1" placeholder="Isi"></td>
-                                        <td><input type="text" class="tbl-input" data-col="2" data-row="1" placeholder="Isi"></td>
-                                        <td class="tbl-rm-col"><button type="button" class="tbl-del" onclick="deleteRow(this)" title="Hapus baris">×</button></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <div class="table-actions">
-                                <button type="button" class="tbl-btn" onclick="addRow()">+ Baris</button>
-                                <button type="button" class="tbl-btn tbl-btn-secondary" onclick="addColumn()">+ Kolom</button>
-                                <button type="button" class="tbl-btn tbl-btn-secondary" onclick="removeLastColumn()">− Kolom</button>
-                            </div>
-                        </div>
-                        <input type="hidden" name="table_data" id="table_data">
-                    </div>
-                </div>
-
-                <div class="section-title type-field type-umum type-penawaran type-lamaran type-undangan type-pemberitahuan" style="display:none">Pengirim</div>
-                <div class="form-row type-field type-umum type-penawaran type-lamaran type-undangan type-pemberitahuan" style="display:none">
-                    <div class="form-group half">
-                        <label>Nama Pengirim <span class="required">*</span></label>
-                        <input type="text" name="sender" placeholder="Nama lengkap">
-                    </div>
-                    <div class="form-group half type-field type-umum type-penawaran type-undangan type-pemberitahuan" style="display:none">
-                        <label>Jabatan <span class="required">*</span></label>
-                        <input type="text" name="sender_title" placeholder="Direktur / Manager / HRD">
-                    </div>
-                    <div class="form-group full">
-                        <label>Tanda Tangan (Upload Gambar)</label>
-                        <input type="file" name="signature" accept="image/png,image/jpeg,image/gif,image/webp" onchange="previewImg(this,'signature-preview')">
-                        <div class="file-hint">PNG background transparan lebih baik</div>
-                        <img class="preview" id="signature-preview">
-                    </div>
-                </div>
-
-                <div class="btn-group">
-                    <button type="submit" formaction="/preview" formtarget="_blank" class="btn btn-secondary">Preview</button>
-                    <button type="submit" formaction="/generate" class="btn">Download PDF</button>
-                </div>
-            </form>
-        </div>
-
-        <div class="footer">Hasil dalam format PDF ukuran A4</div>
+<div class="container">
+    <div class="page-title">
+        <h1>Buat Surat Resmi</h1>
+        <p>Isi data surat, preview, lalu download dalam format PDF</p>
     </div>
 
-    <script>
-        function previewImg(input, id) {
-            const el = document.getElementById(id);
-            if (input.files && input.files[0]) {
-                const r = new FileReader();
-                r.onload = function(e) { el.src = e.target.result; el.style.display = 'block'; };
-                r.readAsDataURL(input.files[0]);
-            }
-        }
+    <div class="card">
+        <form action="/generate" method="post" enctype="multipart/form-data">
 
-        function toggleTypeFields() {
-            const type = document.getElementById('letter_type').value;
-            document.querySelectorAll('.type-field').forEach(el => { el.style.display = 'none'; });
-            document.querySelectorAll('.type-' + type).forEach(el => { el.style.display = 'block'; });
-        }
+            <div class="section-head"><span class="dot"></span><h2>Jenis Surat</h2></div>
+            <div class="form-row">
+                <div class="form-group half">
+                    <label>Jenis Surat <span class="req">*</span></label>
+                    <select name="letter_type" id="letter_type" onchange="toggleTypeFields()" required>
+                        {% for key, label in letter_types.items() %}
+                        <option value="{{ key }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group half">
+                    <label>Tanggal <span class="req">*</span></label>
+                    <input type="date" name="date" value="{{ today }}" required>
+                </div>
 
-        document.addEventListener('DOMContentLoaded', toggleTypeFields);
-    </script>
+                <div class="form-group full type-field type-lamaran">
+                    <label>Posisi yang Dilamar <span class="req">*</span></label>
+                    <input type="text" name="position" placeholder="Staff Administrasi, Marketing, IT Support">
+                </div>
+            </div>
 
-    <script>
-        function syncTableData() {
-            const rows = document.querySelectorAll('#table-editor tr');
-            const data = [];
-            rows.forEach(r => {
-                const rd = [];
-                r.querySelectorAll('.tbl-input').forEach(i => rd.push(i.value));
-                if (rd.length) data.push(rd);
-            });
-            document.getElementById('table_data').value = JSON.stringify(data);
+            <div class="section-head"><span class="dot"></span><h2>Detail Acara</h2></div>
+            <div class="form-row type-field type-undangan">
+                <div class="form-group half"><label>Nama Acara</label><input type="text" name="event_name" placeholder="Rapat Tahunan"></div>
+                <div class="form-group half"><label>Tanggal Acara</label><input type="date" name="event_date"></div>
+                <div class="form-group half"><label>Waktu</label><input type="text" name="event_time" placeholder="09.00 WIB - selesai"></div>
+                <div class="form-group full"><label>Tempat</label><input type="text" name="event_place" placeholder="Aula Gedung Lt. 3"></div>
+            </div>
+
+            <div class="section-head"><span class="dot"></span><h2>Identitas Perusahaan</h2></div>
+            <div class="form-row type-field type-umum type-penawaran type-pemberitahuan">
+                <div class="form-group full">
+                    <label>Nama Perusahaan <span class="req">*</span></label>
+                    <input type="text" name="company_name" placeholder="CV. Contoh Jaya">
+                </div>
+                <div class="form-group full">
+                    <label>Alamat Lengkap <span class="req">*</span></label>
+                    <input type="text" name="company_address" placeholder="Jl. Merdeka No. 123, Kota, Provinsi, Kode Pos">
+                </div>
+                <div class="form-group"><label>Telepon</label><input type="text" name="company_phone" placeholder="(021) 1234-5678"></div>
+                <div class="form-group"><label>Email</label><input type="email" name="company_email" placeholder="info@perusahaan.com"></div>
+                <div class="form-group"><label>Website</label><input type="text" name="company_website" placeholder="www.perusahaan.com"></div>
+                <div class="form-group">
+                    <label>Logo</label>
+                    <input type="file" name="logo" accept="image/png,image/jpeg,image/gif,image/webp" onchange="previewImg(this,'logo-preview')">
+                    <div class="file-hint">PNG transparan &bull; Maks 2MB</div>
+                    <img class="preview-thumb" id="logo-preview">
+                </div>
+            </div>
+
+            <div class="section-head"><span class="dot"></span><h2>Penerima &amp; Isi Surat</h2></div>
+            <div class="form-row">
+                <div class="form-group half type-field type-umum type-penawaran type-pemberitahuan">
+                    <label>Tujuan <span class="req">*</span></label>
+                    <input type="text" name="recipient" placeholder="Nama perusahaan / instansi">
+                </div>
+                <div class="form-group half type-field type-umum type-penawaran type-pemberitahuan">
+                    <label>Alamat Tujuan <span class="req">*</span></label>
+                    <input type="text" name="recipient_address" placeholder="Jl. Contoh No. 123, Kota">
+                </div>
+                <div class="form-group full type-field type-umum type-penawaran type-lamaran type-pemberitahuan">
+                    <label>Perihal <span class="req">*</span></label>
+                    <input type="text" name="subject" placeholder="Penawaran Produk, Lamaran Pekerjaan, Undangan Rapat, dll">
+                </div>
+                <div class="form-group full">
+                    <label>Isi Surat <span class="req">*</span></label>
+                    <textarea name="body" placeholder="Tulis isi surat di sini..." required></textarea>
+                </div>
+            </div>
+
+            <div class="section-head"><span class="dot"></span><h2>Lampiran Tabel</h2></div>
+            <div class="form-row type-field type-umum type-penawaran type-pemberitahuan">
+                <div class="form-group full">
+                    <label class="hint">Tambahkan tabel ke dalam surat (opsional)</label>
+                    <div class="table-builder" id="table-builder">
+                        <table id="table-editor">
+                            <thead><tr>
+                                <th><input type="text" class="tbl-input" data-col="0" data-row="0" placeholder="Kolom 1"></th>
+                                <th><input type="text" class="tbl-input" data-col="1" data-row="0" placeholder="Kolom 2"></th>
+                                <th><input type="text" class="tbl-input" data-col="2" data-row="0" placeholder="Kolom 3"></th>
+                                <th class="tbl-rm-col"></th>
+                            </tr></thead>
+                            <tbody id="table-body">
+                                <tr>
+                                    <td><input type="text" class="tbl-input" data-col="0" data-row="1" placeholder="Isi"></td>
+                                    <td><input type="text" class="tbl-input" data-col="1" data-row="1" placeholder="Isi"></td>
+                                    <td><input type="text" class="tbl-input" data-col="2" data-row="1" placeholder="Isi"></td>
+                                    <td class="tbl-rm-col"><button type="button" class="tbl-del" onclick="deleteRow(this)">&times;</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="table-actions">
+                            <button type="button" class="tbl-btn" onclick="addRow()">+ Baris</button>
+                            <button type="button" class="tbl-btn tbl-btn-secondary" onclick="addColumn()">+ Kolom</button>
+                            <button type="button" class="tbl-btn tbl-btn-secondary" onclick="removeLastColumn()">&minus; Kolom</button>
+                        </div>
+                    </div>
+                    <input type="hidden" name="table_data" id="table_data">
+                </div>
+            </div>
+
+            <div class="section-head"><span class="dot"></span><h2>Penandatangan</h2></div>
+            <div class="form-row type-field type-umum type-penawaran type-lamaran type-undangan type-pemberitahuan">
+                <div class="form-group half">
+                    <label>Nama <span class="req">*</span></label>
+                    <input type="text" name="sender" placeholder="Nama lengkap">
+                </div>
+                <div class="form-group half type-field type-umum type-penawaran type-undangan type-pemberitahuan">
+                    <label>Jabatan <span class="req">*</span></label>
+                    <input type="text" name="sender_title" placeholder="Direktur / Manager">
+                </div>
+                <div class="form-group full">
+                    <label>Tanda Tangan</label>
+                    <input type="file" name="signature" accept="image/png,image/jpeg,image/gif,image/webp" onchange="previewImg(this,'signature-preview')">
+                    <div class="file-hint">Gambar tanda tangan &bull; PNG transparan lebih baik</div>
+                    <img class="preview-thumb" id="signature-preview">
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button type="submit" formaction="/preview" formtarget="_blank" class="btn btn-secondary">Preview</button>
+                <button type="submit" formaction="/generate" class="btn btn-primary">Download PDF</button>
+            </div>
+        </form>
+    </div>
+    <div class="footer"><a href="https://synkrn.biz.id" target="_blank" style="color:inherit;text-decoration:none;">SYNKRN TEKNOLOGI</a> &mdash; Hasil dalam format PDF ukuran A4</div>
+</div>
+
+<script>
+    function previewImg(input, id) {
+        const el = document.getElementById(id);
+        if (input.files && input.files[0]) {
+            const r = new FileReader();
+            r.onload = function(e) { el.src = e.target.result; el.style.display = 'block'; };
+            r.readAsDataURL(input.files[0]);
         }
-        function addRow() {
-            const tb = document.getElementById('table-body');
-            const cols = document.querySelector('#table-editor thead tr').querySelectorAll('th:not(:last-child)').length;
-            const tr = document.createElement('tr');
-            for (let c = 0; c < cols; c++) {
-                const td = document.createElement('td');
-                const inp = document.createElement('input');
-                inp.type = 'text'; inp.className = 'tbl-input'; inp.placeholder = 'Isi'; inp.oninput = syncTableData;
-                td.appendChild(inp); tr.appendChild(td);
-            }
-            const td = document.createElement('td'); td.className = 'tbl-rm-col';
-            const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'tbl-del';
-            btn.innerHTML = '×'; btn.onclick = function(){ deleteRow(this); };
-            td.appendChild(btn); tr.appendChild(td); tb.appendChild(tr); syncTableData();
+    }
+    function toggleTypeFields() {
+        const type = document.getElementById('letter_type').value;
+        document.querySelectorAll('.type-field').forEach(el => { el.style.display = 'none'; });
+        document.querySelectorAll('.type-' + type).forEach(el => { el.style.display = 'block'; });
+    }
+    document.addEventListener('DOMContentLoaded', toggleTypeFields);
+</script>
+<script>
+    function syncTableData() {
+        const rows = document.querySelectorAll('#table-editor tr');
+        const data = [];
+        rows.forEach(r => { const rd = []; r.querySelectorAll('.tbl-input').forEach(i => rd.push(i.value)); if (rd.length) data.push(rd); });
+        document.getElementById('table_data').value = JSON.stringify(data);
+    }
+    function addRow() {
+        const tb = document.getElementById('table-body');
+        const cols = document.querySelector('#table-editor thead tr').querySelectorAll('th:not(:last-child)').length;
+        const tr = document.createElement('tr');
+        for (let c = 0; c < cols; c++) {
+            const td = document.createElement('td'); const inp = document.createElement('input');
+            inp.type = 'text'; inp.className = 'tbl-input'; inp.placeholder = 'Isi'; inp.oninput = syncTableData;
+            td.appendChild(inp); tr.appendChild(td);
         }
-        function deleteRow(b) { const tr = b.closest('tr'); if (document.querySelectorAll('#table-body tr').length > 1) { tr.remove(); syncTableData(); } }
-        function addColumn() {
-            const hr = document.querySelector('#table-editor thead tr');
-            const ci = hr.querySelectorAll('th:not(:last-child)').length;
-            const th = document.createElement('th');
-            const inp = document.createElement('input'); inp.type = 'text'; inp.className = 'tbl-input';
-            inp.placeholder = 'Kolom ' + (ci + 1); inp.oninput = syncTableData;
-            th.appendChild(inp); hr.insertBefore(th, hr.lastElementChild);
-            document.querySelectorAll('#table-body tr').forEach(row => {
-                const td = document.createElement('td');
-                const i2 = document.createElement('input'); i2.type = 'text'; i2.className = 'tbl-input';
-                i2.placeholder = 'Isi'; i2.oninput = syncTableData;
-                td.appendChild(i2); row.insertBefore(td, row.lastElementChild);
-            }); syncTableData();
-        }
-        function removeLastColumn() {
-            const hr = document.querySelector('#table-editor thead tr');
-            const cols = hr.querySelectorAll('th:not(:last-child)');
-            if (cols.length <= 1) return;
-            hr.removeChild(cols[cols.length - 1]);
-            document.querySelectorAll('#table-body tr').forEach(row => {
-                const cells = row.querySelectorAll('td:not(:last-child)');
-                if (cells.length) row.removeChild(cells[cells.length - 1]);
-            }); syncTableData();
-        }
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.tbl-input').forEach(el => el.oninput = syncTableData);
-            syncTableData();
-        });
-    </script>
+        const td = document.createElement('td'); td.className = 'tbl-rm-col';
+        const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'tbl-del'; btn.innerHTML = '×'; btn.onclick = function(){ deleteRow(this); };
+        td.appendChild(btn); tr.appendChild(td); tb.appendChild(tr); syncTableData();
+    }
+    function deleteRow(b) { const tr = b.closest('tr'); if (document.querySelectorAll('#table-body tr').length > 1) { tr.remove(); syncTableData(); } }
+    function addColumn() {
+        const hr = document.querySelector('#table-editor thead tr'); const ci = hr.querySelectorAll('th:not(:last-child)').length;
+        const th = document.createElement('th'); const inp = document.createElement('input'); inp.type = 'text'; inp.className = 'tbl-input'; inp.placeholder = 'Kolom '+(ci+1); inp.oninput = syncTableData;
+        th.appendChild(inp); hr.insertBefore(th, hr.lastElementChild);
+        document.querySelectorAll('#table-body tr').forEach(row => {
+            const td = document.createElement('td'); const i2 = document.createElement('input'); i2.type = 'text'; i2.className = 'tbl-input'; i2.placeholder = 'Isi'; i2.oninput = syncTableData;
+            td.appendChild(i2); row.insertBefore(td, row.lastElementChild);
+        }); syncTableData();
+    }
+    function removeLastColumn() {
+        const hr = document.querySelector('#table-editor thead tr'); const cols = hr.querySelectorAll('th:not(:last-child)'); if (cols.length <= 1) return;
+        hr.removeChild(cols[cols.length - 1]);
+        document.querySelectorAll('#table-body tr').forEach(row => { const cells = row.querySelectorAll('td:not(:last-child)'); if (cells.length) row.removeChild(cells[cells.length - 1]); });
+        syncTableData();
+    }
+    document.addEventListener('DOMContentLoaded', function() { document.querySelectorAll('.tbl-input').forEach(el => el.oninput = syncTableData); syncTableData(); });
+</script>
 </body>
 </html>

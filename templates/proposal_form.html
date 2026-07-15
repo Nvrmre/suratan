@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buat Proposal &bull; Suratan</title>
+    <style>
+        :root {
+            --primary: #1e3a5f;
+            --primary-light: #2b6cb0;
+            --accent: #e8b831;
+            --bg: #f1f4f8;
+            --surface: #ffffff;
+            --text: #1a202c;
+            --text-muted: #718096;
+            --border: #e2e8f0;
+            --radius: 12px;
+            --shadow-lg: 0 4px 24px rgba(0,0,0,0.08);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg); color: var(--text); min-height: 100vh;
+        }
+        .topbar {
+            background: var(--primary); color: white; padding: 0 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            height: 56px; position: sticky; top: 0; z-index: 50;
+        }
+        .topbar-brand { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px; }
+        .topbar-brand span { color: var(--accent); }
+        .topbar nav { display: flex; gap: 4px; }
+        .topbar nav a { color: rgba(255,255,255,0.75); text-decoration: none; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.15s; }
+        .topbar nav a:hover { color: white; background: rgba(255,255,255,0.1); }
+        .topbar nav a.active { color: white; background: rgba(255,255,255,0.15); }
+
+        .container { max-width: 880px; margin: 0 auto; padding: 32px 20px 48px; }
+        .page-title { margin-bottom: 28px; }
+        .page-title h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; color: var(--primary); }
+        .page-title p { color: var(--text-muted); font-size: 14px; margin-top: 2px; }
+
+        .card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: 36px 40px; border: 1px solid var(--border); }
+
+        .section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
+        .section-head .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+        .section-head h2 { font-size: 15px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .section-head:not(:first-child) { margin-top: 28px; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .form-group { margin-bottom: 6px; }
+        .form-group.full { grid-column: 1 / -1; }
+        label { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+        label .req { color: #e53e3e; }
+
+        input, textarea, select {
+            width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px;
+            font-size: 14px; font-family: inherit; transition: all 0.15s;
+            background: #fafbfc; color: var(--text); -webkit-appearance: none;
+        }
+        input:hover, textarea:hover { border-color: #cbd5e0; }
+        input:focus, textarea:focus { outline: none; border-color: var(--primary-light); background: white; box-shadow: 0 0 0 3px rgba(43,108,176,0.1); }
+        textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+        .file-input-wrap { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .file-input-wrap input[type=file] { flex: 1; padding: 8px; }
+        .preview-thumb { max-height: 48px; max-width: 80px; border-radius: 6px; border: 1px solid var(--border); }
+
+        .table-builder { border: 1.5px solid var(--border); border-radius: 8px; overflow-x: auto; background: #fafbfc; -webkit-overflow-scrolling: touch; }
+        .table-builder table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 550px; }
+        .table-builder th, .table-builder td { border: 1px solid var(--border); padding: 3px; vertical-align: middle; }
+        .table-builder th { background: #edf2f7; font-size: 12px; }
+        .tbl-rm-col { width: 32px; min-width: 32px; max-width: 32px; padding: 0 !important; text-align: center; }
+        .tbl-num { width: 28px; text-align: center; font-size: 13px; color: var(--text-muted); }
+        .tbl-input {
+            width: 100%; border: none !important; padding: 7px 6px !important; font-size: 13px !important;
+            background: transparent !important; border-radius: 0 !important; min-height: 32px !important;
+        }
+        .tbl-input:focus { background: white !important; box-shadow: inset 0 0 0 2px var(--primary-light); }
+        .tbl-input.amount { text-align: right; }
+        .tbl-jumlah { text-align: right; font-size: 13px; padding: 7px 8px; color: var(--primary); font-weight: 600; }
+        .tbl-del {
+            background: none; border: none; color: #e53e3e; font-size: 18px; cursor: pointer;
+            padding: 2px 4px; line-height: 1; border-radius: 4px; touch-action: manipulation;
+        }
+        .table-actions { display: flex; gap: 6px; padding: 8px 10px; flex-wrap: wrap; }
+        .tbl-btn {
+            padding: 6px 14px; border: 1.5px solid var(--primary-light); background: white;
+            color: var(--primary-light); border-radius: 6px; font-size: 13px; font-weight: 500;
+            cursor: pointer; touch-action: manipulation; transition: background 0.15s;
+        }
+        .tbl-btn:hover { background: #ebf8ff; }
+
+        .total-section { margin-top: 12px; text-align: right; font-size: 14px; line-height: 2; }
+        .total-section .total-row { display: flex; justify-content: flex-end; gap: 16px; padding: 2px 0; }
+        .total-section .total-row .label { min-width: 120px; font-weight: 500; }
+        .total-section .total-row .value { min-width: 150px; text-align: right; font-weight: 600; }
+        .total-section .grand-total { font-size: 16px; color: var(--primary); border-top: 2px solid var(--primary); padding-top: 4px; margin-top: 4px; }
+
+        .btn { padding: 8px 18px; border: 1.5px solid var(--primary-light); background: white; color: var(--primary-light); border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; touch-action: manipulation; transition: background 0.15s; }
+        .btn:hover { background: #ebf8ff; }
+
+        .btn-row { display: flex; gap: 12px; margin-top: 24px; }
+        .btn-action {
+            flex: 1; padding: 12px 24px; border: none; border-radius: 8px;
+            font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+            text-align: center; touch-action: manipulation;
+        }
+        .btn-action:active { transform: scale(0.98); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-light); }
+        .btn-secondary { background: #edf2f7; color: var(--text); border: 1.5px solid var(--border); }
+        .btn-secondary:hover { background: #e2e8f0; }
+
+        .footer { text-align: center; margin-top: 20px; color: var(--text-muted); font-size: 13px; padding-bottom: 24px; }
+
+        @media (max-width: 768px) {
+            .card { padding: 24px; }
+            .form-row { grid-template-columns: 1fr; gap: 10px; }
+            .btn-row { flex-direction: column; }
+        }
+        @media (max-width: 640px) {
+            .container { padding: 16px 12px 32px; }
+            .topbar { padding: 0 16px; }
+            .topbar nav a { padding: 6px 12px; font-size: 13px; }
+            .card { padding: 16px; border-radius: 10px; }
+            .page-title h1 { font-size: 20px; }
+            .scroll-hint { display: block !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="topbar-brand">Suratan<span>.</span></div>
+    <nav>
+        <a href="/">Surat</a>
+        <a href="/cv">CV</a>
+        <a href="/proposal" class="active">Proposal</a>
+    </nav>
+</div>
+
+<div class="container">
+    <div class="page-title">
+        <h1>Buat Proposal Proyek</h1>
+        <p>Lengkap dengan RAB, PPN, dan total otomatis</p>
+    </div>
+
+    <div class="card">
+        <form id="proposal-form" action="/preview_proposal" method="post" enctype="multipart/form-data">
+
+            <div class="section-head"><span class="dot"></span><h2>Identitas Perusahaan</h2></div>
+            <div class="form-row">
+                <div class="form-group full">
+                    <label>Logo Perusahaan</label>
+                    <div class="file-input-wrap">
+                        <input type="file" name="logo" accept="image/*" onchange="previewImg(this,'logo-preview')">
+                        <img id="logo-preview" class="preview-thumb" style="display:none;">
+                    </div>
+                </div>
+                <div class="form-group full"><label>Nama Perusahaan <span class="req">*</span></label><input type="text" name="company_name" required placeholder="CV. Karya Mandiri"></div>
+                <div class="form-group full"><label>Alamat Perusahaan</label><input type="text" name="company_address" placeholder="Jl. Sudirman No. 123, Jakarta Pusat"></div>
+                <div class="form-group"><label>Telepon</label><input type="text" name="company_phone" placeholder="021-12345678"></div>
+                <div class="form-group"><label>Email</label><input type="email" name="company_email" placeholder="info@karya.com"></div>
+                <div class="form-group full"><label>Website</label><input type="text" name="company_website" placeholder="www.karya.com"></div>
+            </div>
+
+            <div class="section-head"><span class="dot"></span><h2>Data Proposal</h2></div>
+            <div class="form-row">
+                <div class="form-group"><label>Nomor Proposal</label><input type="text" name="proposal_no" placeholder="001/PROJ/VI/2026"></div>
+                <div class="form-group"><label>Tanggal <span class="req">*</span></label><input type="date" name="date" value="{{ today }}" required></div>
+                <div class="form-group full"><label>Judul Proposal <span class="req">*</span></label><input type="text" name="title" required placeholder="Proyek Pengembangan Sistem Informasi"></div>
+            </div>
+
+            <div class="section-head"><span class="dot"></span><h2>Klien</h2></div>
+            <div class="form-row">
+                <div class="form-group full"><label>Nama Klien / Perusahaan <span class="req">*</span></label><input type="text" name="recipient" required placeholder="PT. Klien Sejahtera"></div>
+                <div class="form-group full"><label>Alamat Klien</label><input type="text" name="recipient_address" placeholder="Jl. Merdeka No. 45, Bandung"></div>
+            </div>
+
+            <div class="section-head"><span class="dot"></span><h2>Latar Belakang</h2></div>
+            <div class="form-row">
+                <div class="form-group full"><textarea name="background" rows="4" placeholder="Jelaskan latar belakang dan alasan proposal ini diajukan..."></textarea></div>
+            </div>
+
+            <div class="section-head"><span class="dot"></span><h2>Ruang Lingkup Pekerjaan</h2></div>
+            <div class="form-row">
+                <div class="form-group full"><textarea name="scope" rows="4" placeholder="Deskripsi pekerjaan yang akan dilakukan..."></textarea></div>
+            </div>
+
+            <div class="section-head"><span class="dot"></span><h2>Rincian Anggaran Biaya (RAB)</h2></div>
+            <div class="scroll-hint" style="text-align:right;font-size:11px;color:var(--text-muted);margin-bottom:4px;display:none;">&larr; geser &rarr;</div>
+            <div class="table-builder" id="tbl-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="tbl-num">No</th>
+                            <th style="width:30%;">Uraian Pekerjaan</th>
+                            <th style="width:10%;">Qty</th>
+                            <th style="width:10%;">Satuan</th>
+                            <th style="width:16%;">Harga Satuan</th>
+                            <th style="width:16%;">Jumlah</th>
+                            <th class="tbl-rm-col"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="items-body">
+                    </tbody>
+                </table>
+                <div class="table-actions">
+                    <button type="button" class="tbl-btn" onclick="addRow()">+ Tambah Item</button>
+                    <button type="button" class="tbl-btn tbl-btn-secondary" onclick="addSampleRows()">Isi Contoh</button>
+                    <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+                        <label style="font-size:13px;margin:0;">PPN</label>
+                        <select name="ppn" id="ppn-select" onchange="calcTotals()" style="width:80px;padding:6px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;background:white;">
+                            <option value="0">0%</option>
+                            <option value="11">11%</option>
+                            <option value="12">12%</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="total-section" id="total-section">
+                <div class="total-row"><span class="label">Subtotal</span><span class="value" id="subtotal-display">Rp0</span></div>
+                <div class="total-row"><span class="label">PPN <span id="ppn-label">(0%)</span></span><span class="value" id="ppn-display">Rp0</span></div>
+                <div class="total-row grand-total"><span class="label">Grand Total</span><span class="value" id="grandtotal-display">Rp0</span></div>
+            </div>
+            <input type="hidden" name="items" id="items-hidden">
+
+            <div class="section-head"><span class="dot"></span><h2>Ketentuan Pembayaran</h2></div>
+            <div class="form-row">
+                <div class="form-group full"><textarea name="payment_terms" rows="3" placeholder="Contoh: Pembayaran dilakukan 2 termin&#10;Termin 1 (50%): Sebelum pekerjaan dimulai&#10;Termin 2 (50%): Setelah pekerjaan selesai"></textarea></div>
+            </div>
+
+            <div class="section-head"><span class="dot"></span><h2>Tanda Tangan</h2></div>
+            <div class="form-row">
+                <div class="form-group full"><label>Tanda Tangan &amp; Stempel</label><input type="file" name="signature" accept="image/*" onchange="previewImg(this,'sig-preview')"></div>
+                <div class="form-group full"><img id="sig-preview" class="preview-thumb" style="max-height:48px;display:none;"></div>
+                <div class="form-group full"><label>Nama Pengirim <span class="req">*</span></label><input type="text" name="sender" required placeholder="Ahmad Fauzi, S.Kom."></div>
+            </div>
+
+            <div class="btn-row">
+                <button type="submit" formaction="/preview_proposal" formtarget="_blank" class="btn-action btn-secondary">Preview</button>
+                <button type="submit" formaction="/generate_proposal" class="btn-action btn-primary">Download PDF</button>
+            </div>
+        </form>
+    </div>
+    <div class="footer"><a href="https://synkrn.biz.id" target="_blank" style="color:inherit;text-decoration:none;">SYNKRN TEKNOLOGI</a> &mdash; Proposal PDF otomatis</div>
+</div>
+
+<script>
+    let rowCount = 0;
+
+    function previewImg(input, id) {
+        const img = document.getElementById(id);
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => { img.src = e.target.result; img.style.display = ''; };
+            reader.readAsDataURL(input.files[0]);
+        } else { img.style.display = 'none'; }
+    }
+
+    function fmtRp(v) {
+        return 'Rp' + v.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    function addRow(uraian, qty, satuan, harga) {
+        const tbody = document.getElementById('items-body');
+        const tr = document.createElement('tr');
+        const no = tbody.children.length + 1;
+        tr.innerHTML = `
+            <td class="tbl-num">${no}</td>
+            <td><input class="tbl-input" name="_uraian" placeholder="Uraian pekerjaan" value="${escapeHtml(uraian||'')}"></td>
+            <td><input class="tbl-input amount" name="_qty" placeholder="0" value="${qty||'1'}" oninput="calcRow(this);calcTotals();"></td>
+            <td><input class="tbl-input" name="_satuan" placeholder="Unit" value="${escapeHtml(satuan||'')}"></td>
+            <td><input class="tbl-input amount" name="_harga" placeholder="0" value="${harga||'0'}" oninput="calcRow(this);calcTotals();"></td>
+            <td><span class="tbl-jumlah" name="_jumlah">${fmtRp(0)}</span></td>
+            <td class="tbl-rm-col"><button type="button" class="tbl-del" onclick="delRow(this)">×</button></td>
+        `;
+        tbody.appendChild(tr);
+        rowCount++;
+        if (uraian || qty || harga) calcRow(tr.querySelector('input[name="_qty"]'));
+        calcTotals();
+    }
+
+    function escapeHtml(s) {
+        if (!s) return '';
+        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function calcRow(el) {
+        const tr = el.closest('tr');
+        const qty = parseInt(tr.querySelector('input[name="_qty"]').value.replace(/\./g,'')) || 0;
+        const harga = parseInt(tr.querySelector('input[name="_harga"]').value.replace(/\./g,'')) || 0;
+        const jumlah = qty * harga;
+        tr.querySelector('span[name="_jumlah"]').textContent = fmtRp(jumlah);
+    }
+
+    function delRow(btn) {
+        btn.closest('tr').remove();
+        renumber();
+        calcTotals();
+    }
+
+    function renumber() {
+        const rows = document.querySelectorAll('#items-body tr');
+        rows.forEach((tr, i) => { tr.querySelector('.tbl-num').textContent = i + 1; });
+    }
+
+    function calcTotals() {
+        let subtotal = 0;
+        document.querySelectorAll('#items-body tr').forEach(tr => {
+            const qty = parseInt(tr.querySelector('input[name="_qty"]').value.replace(/\./g,'')) || 0;
+            const harga = parseInt(tr.querySelector('input[name="_harga"]').value.replace(/\./g,'')) || 0;
+            subtotal += qty * harga;
+        });
+        const ppnPct = parseInt(document.getElementById('ppn-select').value) || 0;
+        const ppnVal = Math.floor(subtotal * ppnPct / 100);
+        const grandTotal = subtotal + ppnVal;
+
+        document.getElementById('subtotal-display').textContent = fmtRp(subtotal);
+        document.getElementById('ppn-label').textContent = `(${ppnPct}%)`;
+        document.getElementById('ppn-display').textContent = fmtRp(ppnVal);
+        document.getElementById('grandtotal-display').textContent = fmtRp(grandTotal);
+    }
+
+    function syncItems() {
+        const items = [];
+        document.querySelectorAll('#items-body tr').forEach(tr => {
+            const uraian = tr.querySelector('input[name="_uraian"]').value.trim();
+            if (!uraian) return;
+            const qty = tr.querySelector('input[name="_qty"]').value.replace(/\./g,'') || '0';
+            const satuan = tr.querySelector('input[name="_satuan"]').value.trim();
+            const harga = tr.querySelector('input[name="_harga"]').value.replace(/\./g,'') || '0';
+            items.push({ uraian, qty: parseInt(qty)||0, satuan, harga: parseInt(harga)||0 });
+        });
+        document.getElementById('items-hidden').value = JSON.stringify(items);
+    }
+
+    function addSampleRows() {
+        addRow('Pengembangan Website Company Profile', '1', 'Proyek', '15000000');
+        addRow('Jasa SEO & Digital Marketing', '3', 'Bulan', '5000000');
+        addRow('Hosting & Domain (1 tahun)', '1', 'Paket', '1500000');
+        addRow('Maintenance & Support', '6', 'Bulan', '2000000');
+        calcTotals();
+    }
+
+    document.getElementById('proposal-form').addEventListener('submit', syncItems);
+    addRow('', '1', '', '0');
+</script>
+</body>
+</html>
