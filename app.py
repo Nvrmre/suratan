@@ -42,15 +42,11 @@ def has_table_data(raw):
         data = json.loads(raw)
         if not data or not isinstance(data, list) or len(data) < 1:
             return False
-        has_content = False
         for row in data:
             for cell in row:
                 if isinstance(cell, str) and cell.strip():
-                    has_content = True
-                    break
-            if has_content:
-                break
-        return has_content
+                    return True
+        return False
     except (json.JSONDecodeError, TypeError):
         return False
 
@@ -59,6 +55,12 @@ def has_table_data(raw):
 def index():
     today = datetime.now().strftime('%Y-%m-%d')
     return render_template('index.html', letter_types=LETTER_TYPES, today=today)
+
+
+@app.route('/cv')
+def cv_form():
+    today = datetime.now().strftime('%Y-%m-%d')
+    return render_template('cv_form.html', today=today)
 
 
 def collect_form_data():
@@ -85,6 +87,58 @@ def collect_form_data():
 
     d['logo_b64'] = logo_b64
     d['signature_b64'] = sig_b64
+    return d
+
+
+def collect_cv_data():
+    d = {}
+    for field in ['name', 'email', 'phone', 'address', 'linkedin', 'summary']:
+        d[field] = request.form.get(field, '')
+
+    education = []
+    i = 0
+    while request.form.get(f'edu_institution_{i}') is not None:
+        edu = {
+            'institution': request.form.get(f'edu_institution_{i}', ''),
+            'degree': request.form.get(f'edu_degree_{i}', ''),
+            'gpa': request.form.get(f'edu_gpa_{i}', ''),
+            'start': request.form.get(f'edu_start_{i}', ''),
+            'end': request.form.get(f'edu_end_{i}', ''),
+        }
+        if edu['institution'] or edu['degree']:
+            education.append(edu)
+        i += 1
+    d['education'] = json.dumps(education)
+
+    experience = []
+    i = 0
+    while request.form.get(f'exp_company_{i}') is not None:
+        exp = {
+            'company': request.form.get(f'exp_company_{i}', ''),
+            'position': request.form.get(f'exp_position_{i}', ''),
+            'start': request.form.get(f'exp_start_{i}', ''),
+            'end': request.form.get(f'exp_end_{i}', ''),
+            'description': request.form.get(f'exp_desc_{i}', ''),
+        }
+        if exp['company'] or exp['position']:
+            experience.append(exp)
+        i += 1
+    d['experience'] = json.dumps(experience)
+
+    certifications = []
+    i = 0
+    while request.form.get(f'cert_name_{i}') is not None:
+        cert = {
+            'name': request.form.get(f'cert_name_{i}', ''),
+            'issuer': request.form.get(f'cert_issuer_{i}', ''),
+            'year': request.form.get(f'cert_year_{i}', ''),
+        }
+        if cert['name']:
+            certifications.append(cert)
+        i += 1
+    d['certifications'] = json.dumps(certifications)
+
+    d['skills'] = request.form.get('skills', '[]')
     return d
 
 
@@ -121,12 +175,39 @@ def render_letter_html(d):
     )
 
 
+def render_cv_html(d):
+    return render_template(
+        'cv.html',
+        name=d['name'].strip(),
+        email=d['email'].strip(),
+        phone=d['phone'].strip(),
+        address=d['address'].strip(),
+        linkedin=d['linkedin'].strip(),
+        summary=d['summary'].strip(),
+        education=d['education'],
+        experience=d['experience'],
+        skills=d['skills'].strip(),
+        certifications=d['certifications'],
+    )
+
+
 @app.route('/generate', methods=['POST'])
 def generate():
     d = collect_form_data()
     html_content = render_letter_html(d)
 
     filename = f'surat_{d["letter_type"]}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'
+    filepath = os.path.join(GENERATED_DIR, filename)
+    HTML(string=html_content).write_pdf(filepath)
+    return send_file(filepath, as_attachment=True, download_name=filename)
+
+
+@app.route('/generate_cv', methods=['POST'])
+def generate_cv():
+    d = collect_cv_data()
+    html_content = render_cv_html(d)
+
+    filename = f'cv_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'
     filepath = os.path.join(GENERATED_DIR, filename)
     HTML(string=html_content).write_pdf(filepath)
     return send_file(filepath, as_attachment=True, download_name=filename)
@@ -145,12 +226,10 @@ def preview():
         json.dump(d, f)
 
     if d['logo_b64']:
-        logo_path = os.path.join(token_dir, 'logo.txt')
-        with open(logo_path, 'w') as f:
+        with open(os.path.join(token_dir, 'logo.txt'), 'w') as f:
             f.write(d['logo_b64'])
     if d['signature_b64']:
-        sig_path = os.path.join(token_dir, 'sig.txt')
-        with open(sig_path, 'w') as f:
+        with open(os.path.join(token_dir, 'sig.txt'), 'w') as f:
             f.write(d['signature_b64'])
 
     return render_template('preview.html', letter_html=html_content, token=token)
@@ -196,10 +275,8 @@ def _img_to_b64(file):
 def _format_date(date_str):
     try:
         dt = datetime.strptime(date_str, '%Y-%m-%d')
-        bulan = [
-            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-        ]
+        bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
         return f'{dt.day} {bulan[dt.month - 1]} {dt.year}'
     except (ValueError, IndexError):
         return date_str

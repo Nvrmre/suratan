@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page { size: 210mm 297mm; margin: 2cm 2cm 2cm 2cm; }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 10.5pt; line-height: 1.4; color: #000;
+        }
+
+        .header {
+            text-align: center; margin-bottom: 16px; padding-bottom: 12px;
+            border-bottom: 2px solid #2b6cb0;
+        }
+        .header .name { font-size: 18pt; font-weight: bold; color: #1a365d; }
+        .header .contact { font-size: 10pt; color: #4a5568; margin-top: 4px; }
+        .header .contact span { margin: 0 6px; }
+
+        .section-title {
+            font-size: 12pt; font-weight: bold; color: #2b6cb0;
+            border-bottom: 1px solid #cbd5e0; padding-bottom: 3px;
+            margin-top: 14px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .section-title:first-of-type { margin-top: 0; }
+
+        .summary { margin-bottom: 6px; text-align: justify; }
+
+        .item { margin-bottom: 8px; }
+        .item-header { display: flex; justify-content: space-between; align-items: baseline; }
+        .item-title { font-weight: bold; font-size: 11pt; }
+        .item-subtitle { font-style: italic; color: #4a5568; }
+        .item-date { font-size: 10pt; color: #718096; white-space: nowrap; }
+        .item-details { margin-top: 2px; padding-left: 14px; }
+        .item-details p { margin: 1px 0; }
+        .item-details ul { margin: 2px 0; padding-left: 18px; }
+        .item-details li { margin-bottom: 1px; }
+
+        .skills-list { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 4px; }
+        .skill-item { background: #ebf8ff; padding: 2px 10px; border-radius: 12px; font-size: 10pt; }
+
+        .cert-item { margin-bottom: 4px; }
+        .cert-item .cert-name { font-weight: bold; }
+        .cert-item .cert-issuer { font-style: italic; color: #4a5568; }
+        .cert-item .cert-year { color: #718096; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="name">{{ name }}</div>
+    <div class="contact">
+        {% if email %}{{ email }}{% endif %}
+        {% if email and phone %} | {% endif %}
+        {% if phone %}{{ phone }}{% endif %}
+        {% if (email or phone) and address %} | {% endif %}
+        {% if address %}{{ address }}{% endif %}
+        {% if linkedin %}
+        {% if email or phone or address %} | {% endif %}
+        {{ linkedin }}
+        {% endif %}
+    </div>
+</div>
+
+{% if summary %}
+<div class="section-title">Ringkasan Profesional</div>
+<div class="summary">{{ summary }}</div>
+{% endif %}
+
+{% set edu_raw = education %}
+{% if edu_raw %}
+{% set edu_list = edu_raw | fromjson %}
+{% if edu_list and edu_list|length > 0 %}
+<div class="section-title">Pendidikan</div>
+{% for e in edu_list %}
+<div class="item">
+    <div class="item-header">
+        <div>
+            <span class="item-title">{{ e.degree }}</span>
+            {% if e.institution %}<span class="item-subtitle"> &mdash; {{ e.institution }}</span>{% endif %}
+        </div>
+        <div class="item-date">{% if e.start %}{{ e.start }}{% endif %}{% if e.start and e.end %} &ndash; {% endif %}{% if e.end %}{{ e.end }}{% endif %}</div>
+    </div>
+    {% if e.gpa %}<div style="font-size:10pt;color:#4a5568;">IPK: {{ e.gpa }}</div>{% endif %}
+</div>
+{% endfor %}
+{% endif %}
+{% endif %}
+
+{% set exp_raw = experience %}
+{% if exp_raw %}
+{% set exp_list = exp_raw | fromjson %}
+{% if exp_list and exp_list|length > 0 %}
+<div class="section-title">Pengalaman Kerja</div>
+{% for e in exp_list %}
+<div class="item">
+    <div class="item-header">
+        <div>
+            <span class="item-title">{{ e.position }}</span>
+            <span class="item-subtitle"> &mdash; {{ e.company }}</span>
+        </div>
+        <div class="item-date">{% if e.start %}{{ e.start }}{% endif %}{% if e.start and e.end %} &ndash; {% endif %}{% if e.end %}{{ e.end }}{% endif %}</div>
+    </div>
+    {% if e.description %}
+    <div class="item-details">
+        {% for line in e.description.split('\n') %}
+            {% if line.strip() %}
+                {% if line.strip().startswith('-') or line.strip().startswith('•') or line.strip().startswith('*') %}
+                <p>{{ line.strip() }}</p>
+                {% else %}
+                <p>&bull; {{ line.strip() }}</p>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endfor %}
+{% endif %}
+{% endif %}
+
+{% set skills_raw = skills %}
+{% if skills_raw %}
+{% set skills_list = skills_raw | fromjson %}
+{% if skills_list and skills_list|length > 0 %}
+<div class="section-title">Keahlian</div>
+<div class="skills-list">
+    {% for s in skills_list %}
+    <span class="skill-item">{{ s }}</span>
+    {% endfor %}
+</div>
+{% endif %}
+{% endif %}
+
+{% set cert_raw = certifications %}
+{% if cert_raw %}
+{% set cert_list = cert_raw | fromjson %}
+{% if cert_list and cert_list|length > 0 %}
+<div class="section-title">Sertifikat</div>
+{% for c in cert_list %}
+<div class="cert-item">
+    <span class="cert-name">{{ c.name }}</span>
+    {% if c.issuer %} &mdash; <span class="cert-issuer">{{ c.issuer }}</span>{% endif %}
+    {% if c.year %} <span class="cert-year">({{ c.year }})</span>{% endif %}
+</div>
+{% endfor %}
+{% endif %}
+{% endif %}
+
+</body>
+</html>
